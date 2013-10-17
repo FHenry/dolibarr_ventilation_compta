@@ -121,7 +121,7 @@ if ($page < 0) $page = 0;
 $limit = $conf->liste_limit;
 $offset = $limit * $page ;
 
-$sql = "SELECT f.facnumber, f.rowid as facid, l.fk_product, l.description, l.total_ht as price, l.rowid, l.fk_code_ventilation, ";
+$sql = "SELECT f.ref, f.rowid as facid, l.fk_product, l.description, l.total_ht as price, l.rowid, l.fk_code_ventilation, ";
 $sql.= " p.rowid as product_id, p.ref as product_ref, p.label as product_label, p.fk_product_type as type, p.accountancy_code_buy as code_buy";
 $sql .= " FROM ".MAIN_DB_PREFIX."facture_fourn as f";
 $sql .= " , ".MAIN_DB_PREFIX."facture_fourn_det as l";
@@ -142,13 +142,13 @@ if ($result)
 
   print '<table class="noborder" width="100%">';
   print '<tr class="liste_titre"><td>Facture</td>';
-  print '<td align="left">Ref</td>';
-  print '<td align="left">Libelle</td>';
+  print '<td align="left">'.$langs->trans("Ref").'</td>';
+  print '<td align="left">'.$langs->trans("Label").'</td>';
   print '<td>'.$langs->trans("Description").'</td>';
-  print '<td align="right">Montant</td>';
-  print '<td align="right">Compte</td>';
-  print '<td align="center">Dans le compte</td>';
-  print '<td align="center">Ventiler</td>';
+  print '<td align="right">'.$langs->trans("Amount").'</td>';
+  print '<td align="right">'.$langs->trans("Compte").'</td>';
+  print '<td align="center">'.$langs->trans("IntoAccount").'</td>';
+  print '<td align="center">'.$langs->trans("Ventilate").'</td>';
   print "</tr>\n";
   
 

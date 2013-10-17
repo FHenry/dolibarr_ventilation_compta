@@ -61,6 +61,7 @@ if ($action == 'delbookkeeping') {
 	if (! empty ( $import_key )) {
 		$object = new BookKeeping ( $db );
 		$result = $object->delete_by_importkey ( $import_key );
+		Header("Location: liste.php");
 		if ($result < 0) {
 			setEventMessage ( $object->errors, 'errors' );
 		}
@@ -104,7 +105,7 @@ llxHeader ( '', 'Compta - Grand Livre' );
  *
  */
 	
-	$sql = "SELECT bk.rowid, bk.doc_date, bk.doc_type, bk.doc_ref, bk.code_tiers, bk.numero_compte , bk.label_compte, bk.debit , bk.credit, bk.montant , bk.sens , bk.code_journal ";
+	$sql = "SELECT bk.rowid, bk.doc_date, bk.doc_type, bk.doc_ref, bk.code_tiers, bk.numero_compte , bk.label_compte, bk.debit , bk.credit, bk.montant , bk.sens , bk.code_journal , bk.piece_num ";
 	
 	$sql .= " FROM " . MAIN_DB_PREFIX . "bookkeeping as bk";
 	
@@ -143,7 +144,7 @@ llxHeader ( '', 'Compta - Grand Livre' );
 		
 		print $formventilation->select_bookkeeping_importkey ( 'importkey', GETPOST ( 'importkey' ) );
 		
-		print '<input type="submit" class="button" value="' . $langs->trans ( "delBookKeeping" ) . '" />';
+		print '<input type="submit" class="button" value="' . $langs->trans ( "DelBookKeeping" ) . '" />';
 		
 		print '</form>';
 		
@@ -156,17 +157,17 @@ llxHeader ( '', 'Compta - Grand Livre' );
 		
 		print "<table class=\"noborder\" width=\"100%\">";
 		print '<tr class="liste_titre">';
-		print_liste_field_titre ( $langs->trans ( "doctype" ), "liste.php", "bk.doc_type" );
-		print_liste_field_titre ( $langs->trans ( "docdate" ), "liste.php", "bk.doc_date" );
-		print_liste_field_titre ( $langs->trans ( "docref" ), "liste.php", "bk.doc_ref" );
-		print_liste_field_titre ( $langs->trans ( "numerocompte" ), "liste.php", "bk.numero_compte" );
-		print_liste_field_titre ( $langs->trans ( "code_tiers" ), "liste.php", "bk.code_tiers" );
-		print_liste_field_titre ( $langs->trans ( "labelcompte" ), "liste.php", "bk_label_compte" );
-		print_liste_field_titre ( $langs->trans ( "debit" ), "liste.php", "bk.debit" );
-		print_liste_field_titre ( $langs->trans ( "credit" ), "liste.php", "bk.credit" );
-		print_liste_field_titre ( $langs->trans ( "montant" ), "liste.php", "bk.montant" );
-		print_liste_field_titre ( $langs->trans ( "sens" ), "liste.php", "bk.sens" );
-		print_liste_field_titre ( $langs->trans ( "codejournal" ), "liste.php", "bk.code_journal" );
+		print_liste_field_titre ( $langs->trans ( "Doctype" ), "liste.php", "bk.doc_type" );
+		print_liste_field_titre ( $langs->trans ( "Docdate" ), "liste.php", "bk.doc_date" );
+		print_liste_field_titre ( $langs->trans ( "Docref" ), "liste.php", "bk.doc_ref" );
+		print_liste_field_titre ( $langs->trans ( "Numerocompte" ), "liste.php", "bk.numero_compte" );
+		print_liste_field_titre ( $langs->trans ( "Code_tiers" ), "liste.php", "bk.code_tiers" );
+		print_liste_field_titre ( $langs->trans ( "Labelcompte" ), "liste.php", "bk_label_compte" );
+		print_liste_field_titre ( $langs->trans ( "Debit" ), "liste.php", "bk.debit" );
+		print_liste_field_titre ( $langs->trans ( "Credit" ), "liste.php", "bk.credit" );
+		print_liste_field_titre ( $langs->trans ( "Amount" ), "liste.php", "bk.montant" );
+		print_liste_field_titre ( $langs->trans ( "Sens" ), "liste.php", "bk.sens" );
+		print_liste_field_titre ( $langs->trans ( "Codejournal" ), "liste.php", "bk.code_journal" );
 		print "</tr>\n";
 		
 		print '<tr class="liste_titre">';
@@ -195,7 +196,7 @@ llxHeader ( '', 'Compta - Grand Livre' );
 			
 			print "<tr $bc[$var]>";
 			
-			print '<td><a href="./fiche.php?action=update&id=' . $obj->rowid . '">';
+			print '<td><a href="./fiche.php?action=update&id=' . $obj->piece_num . '">';
 			print img_edit ();
 			print '</a>&nbsp;' . $obj->doc_type . '</td>' . "\n";
 			print '<td>' . dol_print_date ( $db->jdate ( $obj->doc_date ), 'day' ) . '</td>';

@@ -48,9 +48,10 @@ require_once DOL_DOCUMENT_ROOT . '/fourn/class/fournisseur.class.php';
 dol_include_once ( '/ventilation/compta/class/comptacompte.class.php' );
 dol_include_once ( '/ventilation/compta/class/bookkeeping.class.php' );
 
-$langs->load ( "companies" );
-$langs->load ( "other" );
-$langs->load ( "compta" );
+$langs->load("companies");
+$langs->load("other");
+$langs->load("compta");
+$langs->load("ventilation@ventilation");
 
 $date_startmonth = GETPOST ( 'date_startmonth' );
 $date_startday = GETPOST ( 'date_startday' );
@@ -91,7 +92,7 @@ if (empty ( $date_start ) || empty ( $date_end )) // We define date_start and da
 	$date_end = dol_get_last_day ( $pastmonthyear, $pastmonth, false );
 }
 
-$p = explode ( ":", $conf->global->MAIN_INFO_SOCIETE_PAYS );
+$p = explode ( ":", $conf->global->MAIN_INFO_SOCIETE_COUNTRY );
 $idpays = $p [0];
 
 $sql = "SELECT b.rowid , b.dateo as do, b.datev as dv, b.amount, b.label, b.rappro, b.num_releve, b.num_chq, b.fk_type,soc.code_compta,";
@@ -400,7 +401,7 @@ if (GETPOST ( 'action' ) == 'export_csv') {
 	
 	print '<input type="button" class="button" style="float: right;" value="Export CSV" onclick="launch_export();" />';
 	
-	print '<input type="button" class="button" value="' . $langs->trans ( "writeBookKeeping" ) . '" onclick="writeBookKeeping();" />';
+	print '<input type="button" class="button" value="' . $langs->trans ( "WriteBookKeeping" ) . '" onclick="writeBookKeeping();" />';
 	
 	print '
 	<script type="text/javascript">

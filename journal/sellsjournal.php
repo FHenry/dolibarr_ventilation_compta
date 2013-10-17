@@ -92,7 +92,7 @@ if (empty($date_start) || empty($date_end)) // We define date_start and date_end
 
 
 
-$p = explode(":", $conf->global->MAIN_INFO_SOCIETE_PAYS);
+$p = explode(":", $conf->global->MAIN_INFO_SOCIETE_COUNTRY);
 $idpays = $p[0];
 
 $sql = "SELECT f.rowid, f.facnumber, f.type, f.datef as df, f.ref_client,";
@@ -304,7 +304,7 @@ report_header($nom,$nomlink,$period,$periodlink,$description,$builddate,$exportl
 	
 	print '<input type="button" class="button" style="float: right;" value="Export CSV" onclick="launch_export();" />';
 	
-	print '<input type="button" class="button" value="'.$langs->trans("writeBookKeeping").'" onclick="writeBookKeeping();" />';
+	print '<input type="button" class="button" value="'.$langs->trans("WriteBookKeeping").'" onclick="writeBookKeeping();" />';
 	
 	print '
 	<script type="text/javascript">
