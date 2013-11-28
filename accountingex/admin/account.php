@@ -51,7 +51,7 @@ if ($user->societe_id > 0)
 if (! $user->rights->accountingex->admin)
 	accessforbidden ();
 	
-	// filter
+// filter
 $sortfield = GETPOST ( "sortfield", 'alpha' );
 $sortorder = GETPOST ( "sortorder", 'alpha' );
 
@@ -67,7 +67,7 @@ if ($action == 'delete') {
 
 llxHeader ( '', $langs->trans ( "Accounts" ) );
 
-print_barre_liste ( $langs->trans ( "Accounts" ), $page, "account.php", "", $sortfield, $sortorder, '', $num );
+print_barre_liste ( $langs->trans ( "Accounts" ), $page, "account.php", "", $sortfield, $sortorder, '');
 
 $pcgver = $conf->global->CHARTOFACCOUNTS;
 
@@ -97,7 +97,7 @@ $sql2 .= " ORDER BY $sortfield $sortorder"; // . $db->plimit ( $conf->liste_limi
 $result = $db->query ( $sql2 );
 if ($result) {
 	$num = $db->num_rows ( $result );
-	$i = 0;
+	$i = 1;
 	
 	$var = true;
 	
