@@ -48,7 +48,7 @@ class modAccountingExpert extends DolibarrModules
 
 		// Possible values for version are: 'development', 'experimental', 'dolibarr' or version
 		$this->version = '3.4.x';
-    $this->revision = '1.0.0';
+    	$this->revision = '1.0.0';
 
 		$this->const_name = 'MAIN_MODULE_'.strtoupper($this->name);
 		$this->special = 0;
@@ -66,7 +66,7 @@ class modAccountingExpert extends DolibarrModules
 		// Dependencies
 		$this->depends = array();		// List of modules id that must be enabled if this module is enabled
 		$this->requiredby = array();	// List of modules id to disable if this one is disabled
-    $this->conflictwith = array("modAccounting"); // List of modules are in conflict with this module
+    	$this->conflictwith = array("modAccounting"); // List of modules are in conflict with this module
 		$this->phpmin = array(5,2);					// Minimum version of PHP required by module
 		$this->need_dolibarr_version = array(3,4);	// Minimum version of Dolibarr required by module
 		$this->langfiles = array("accountingex@accountingex");
@@ -80,11 +80,11 @@ class modAccountingExpert extends DolibarrModules
 		$this->const[6] = array("ACCOUNTINGEX_SOCIAL_JOURNAL","chaine","SOC");    
 		$this->const[7] = array("ACCOUNTINGEX_CASH_JOURNAL","chaine","CAI");    
 		$this->const[8] = array("ACCOUNTINGEX_MISCELLANEOUS_JOURNAL","chaine","OD");
-    $this->const[9] = array("ACCOUNTINGEX_ACCOUNT_TRANSFER_CASH","chaine","580000");
-    $this->const[10] = array("CHARTOFACCOUNTS","chaine","2");
+    	$this->const[9] = array("ACCOUNTINGEX_ACCOUNT_TRANSFER_CASH","chaine","580000");
+    	$this->const[10] = array("CHARTOFACCOUNTS","chaine","2");
     
-    // Css
-    $this->module_parts = array('css' => array('/accountingex/css/accountingex.css.php'));
+    	// Css
+    	$this->module_parts = array('css' => array('/accountingex/css/accountingex.css.php'));
     		
 		// Boxes
 		$this->boxes = array();
