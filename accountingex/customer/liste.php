@@ -35,6 +35,7 @@ if (! $res) die("Include of main fails");
 // Class
 require_once(DOL_DOCUMENT_ROOT."/compta/facture/class/facture.class.php");
 require_once(DOL_DOCUMENT_ROOT."/product/class/product.class.php");
+require_once('../class/html.formventilation.class.php');
 
 // Langs
 $langs->load("compta");
@@ -102,6 +103,7 @@ $sqlCompte = "SELECT a.rowid, a.account_number, a.label, a.fk_pcg_version";
 $sqlCompte .= " , s.rowid, s.pcg_version";
 $sqlCompte .= " FROM ".MAIN_DB_PREFIX."accountingaccount as a, ".MAIN_DB_PREFIX."accounting_system as s";
 $sqlCompte .= " WHERE a.fk_pcg_version = s.pcg_version AND ".$conf->global->CHARTOFACCOUNTS."=s.rowid";
+$sqlCompte .= " AND a.active = '1'";
 $sqlCompte .= " ORDER BY a.account_number ASC";
 
 $resultCompte = $db->query($sqlCompte);
@@ -136,8 +138,10 @@ $sql.= " FROM ".MAIN_DB_PREFIX."facture as f";
 $sql.= " , ".MAIN_DB_PREFIX."facturedet as l";
 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product as p ON p.rowid = l.fk_product";
 $sql.= " WHERE f.rowid = l.fk_facture AND f.fk_statut > 0 AND fk_code_ventilation = 0";
+$sql.= " AND f.import_key IS NULL";
 $sql.= " ORDER BY l.rowid DESC ".$db->plimit($limit+1,$offset);
 
+dol_syslog('ventillation:customer:liste sql='.$sql);
 $result = $db->query($sql);
 if ($result)
 {
@@ -161,6 +165,7 @@ if ($result)
 	$facture_static=new Facture($db);
 	$product_static=new Product($db);
   	$form = new Form($db);
+  	$formventil = new FormVentilation($db);
 
 	print '<form action="liste.php" method="post">'."\n";
 	print '<input type="hidden" name="action" value="ventil">';
@@ -200,7 +205,8 @@ if ($result)
 
 		//Colonne choix du compte
 		print '<td align="center">';
-		print $form->selectarray("codeventil[]",$cgs, $cgn[$objp->code_sell]);
+		print $formventil->select_codecompta($objp->code_sell,"codeventil[]");
+		//print $form->selectarray("codeventil[]",$cgs, $cgn[$objp->code_sell]);
 		print '</td>';
         
 		//Colonne choix ligne a ventiler

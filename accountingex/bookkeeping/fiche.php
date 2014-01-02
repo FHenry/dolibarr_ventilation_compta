@@ -34,7 +34,7 @@ if (! $res && file_exists("../../../main.inc.php")) $res=@include("../../../main
 if (! $res) die("Include of main fails");
 
 // Class
-require_once DOL_DOCUMENT_ROOT .'/accountingex/class/bookkeeping.class.php';
+require_once '../class/bookkeeping.class.php';
 
 // Langs
 $langs->load ( "accountingex@accountingex" );

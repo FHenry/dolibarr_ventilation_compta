@@ -99,6 +99,7 @@ class FormVentilation extends Form {
 		$sql .= " FROM " . MAIN_DB_PREFIX . "accountingaccount as aa";
 		$sql .= " INNER JOIN " . MAIN_DB_PREFIX . "accounting_system as asy ON aa.fk_pcg_version = asy.pcg_version";
 		$sql .= " AND asy.rowid = ".$conf->global->CHARTOFACCOUNTS;
+        $sql .= " AND aa.active = 1";
 		$sql .= " ORDER BY aa.account_number";
 	
 		dol_syslog ( get_class ( $this ) . "::select_account_parent sql=" . $sql, LOG_DEBUG );
@@ -207,6 +208,48 @@ class FormVentilation extends Form {
 						$out .= '<option value="' . $obj->pcg_subtype . '" selected="selected">' . $label . '</option>';
 					} else {
 						$out .= '<option value="' . $obj->pcg_subtype . '">' . $label . '</option>';
+					}
+					$i ++;
+				}
+			}
+			$out .= '</select>';
+		} else {
+			dol_print_error ( $this->db );
+		}
+		$this->db->free ( $resql );
+		return $out;
+	}
+	
+	function select_codecompta($selectid, $htmlname = 'codeventil') {
+		global $conf, $user, $langs;
+	
+		$out = '';
+	
+		$sql = "SELECT a.rowid as accntid, a.account_number, a.label, a.fk_pcg_version";
+		$sql .= " , s.rowid, s.pcg_version";
+		$sql .= " FROM ".MAIN_DB_PREFIX."accountingaccount as a, ".MAIN_DB_PREFIX."accounting_system as s";
+		$sql .= " WHERE a.fk_pcg_version = s.pcg_version AND ".$conf->global->CHARTOFACCOUNTS."=s.rowid";
+		$sql .= " AND a.active = '1'";
+		$sql .= " ORDER BY a.account_number ASC";
+	
+		dol_syslog ( get_class ( $this ) . "::select_codecompta sql=" . $sql, LOG_DEBUG );
+		$resql = $this->db->query ( $sql );
+		if ($resql) {
+	
+			$out .= '<select id="' . $htmlname . '" class="flat" name="' . $htmlname . '">';
+			if ($showempty)
+				$out .= '<option value="-1"></option>';
+			$num = $this->db->num_rows ( $resql );
+			$i = 0;
+			if ($num) {
+				while ( $i < $num ) {
+					$obj = $this->db->fetch_object ( $resql );
+					$label = $obj->account_number .' '. $obj->label;
+					
+					if (($selectid != '') && (strpos($obj->account_number,substr($selectid,0,3))===0)) {
+						$out .= '<option value="' . $obj->accntid . '" selected="selected">' . $label . '</option>';
+					} else {
+						$out .= '<option value="' . $obj->accntid . '">' . $label . '</option>';
 					}
 					$i ++;
 				}
