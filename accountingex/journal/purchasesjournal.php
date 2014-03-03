@@ -74,6 +74,7 @@ if (!$user->rights->accountingex->access) accessforbidden();
 
 
 $year_current = strftime("%Y",dol_now());
+$current_month = strftime ( "%m", dol_now () );
 $pastmonth = strftime("%m",dol_now()) - 1;
 $pastmonthyear = $year_current;
 if ($pastmonth == 0)
@@ -82,13 +83,15 @@ if ($pastmonth == 0)
 	$pastmonthyear--;
 }
 
-$date_start=dol_mktime(0, 0, 0, $date_startmonth, $date_startday, $date_startyear);
-$date_end=dol_mktime(23, 59, 59, $date_endmonth, $date_endday, $date_endyear);
+$date_start = dol_mktime ( 0, 0, 0, $date_startmonth, $date_startday, $date_startyear );
+$date_end = dol_mktime ( 23, 59, 59, $date_endmonth, $date_endday, $date_endyear );
 
-if (empty($date_start) || empty($date_end)) // We define date_start and date_end
+if (empty ( $date_start ) || empty ( $date_end )) // We define date_start and date_end
 {
-	$date_start=dol_get_first_day($pastmonthyear,$pastmonth,false); $date_end=dol_get_last_day($pastmonthyear,$pastmonth,false);
+	$date_start = dol_get_first_day ( $year_current, $current_month, false );
+	$date_end = dol_get_last_day ( $year_current, $current_month, false );
 }
+
 
 
 
@@ -100,13 +103,18 @@ $sql = "SELECT f.rowid, f.ref, f.type, f.datef as df, f.libelle,";
 $sql.= " fd.rowid as fdid, fd.total_ttc, fd.tva_tx, fd.total_ht, fd.tva as total_tva, fd.product_type,";
 $sql.= " s.rowid as socid, s.nom as name, s.code_compta_fournisseur, s.fournisseur,";
 $sql.= " s.code_compta_fournisseur, p.accountancy_code_buy , ct.accountancy_code_buy as account_tva, aa.rowid as fk_compte, aa.account_number as compte, aa.label as label_compte";
+$sql .= ' ,pextra.pr_cd_analytics';
+$sql .= ' ,proj.ref  as projet_ref';
+$sql .= ' ,proj.rowid as projet_id';
 $sql.= " FROM ".MAIN_DB_PREFIX."facture_fourn_det fd";
 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."c_tva ct ON fd.tva_tx = ct.taux AND ct.fk_pays = '".$idpays."'";
 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product p ON p.rowid = fd.fk_product";
 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."accountingaccount aa ON aa.rowid = fd.fk_code_ventilation";
+$sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "product_extrafields pextra ON pextra.fk_object = p.rowid";
 $sql.= " JOIN ".MAIN_DB_PREFIX."facture_fourn f ON f.rowid = fd.fk_facture_fourn";
 $sql.= " JOIN ".MAIN_DB_PREFIX."societe s ON s.rowid = f.fk_soc" ;
-$sql.= " WHERE f.fk_statut > 0 AND f.entity = ".$conf->entity;
+$sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "projet proj ON proj.rowid = f.fk_projet";
+$sql.= " WHERE f.fk_statut > 0";
 if (! empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS)) $sql.= " AND f.type IN (0,1,2)";
 else $sql.= " AND f.type IN (0,1,2,3)";
 if ($date_start && $date_end) $sql .= " AND f.datef >= '".$db->idate($date_start)."' AND f.datef <= '".$db->idate($date_end)."'";
@@ -144,6 +152,27 @@ if ($result)
 		$tabfac[$obj->rowid]["ref"] = $obj->ref;
 		$tabfac[$obj->rowid]["type"] = $obj->type;
 		$tabfac[$obj->rowid]["fk_facturefourndet"] = $obj->fdid;
+		$tabfac [$obj->rowid] ["projet_id"] = $obj->projet_id;
+		$tabfac [$obj->rowid] ["projet_ref"] = $obj->projet_ref;
+		//Centre des congrés
+		$tmprefix='N/A';
+		if ($obj->entity==3) {
+			$tmprefix='11';
+		}
+		//Parc des expo
+		if ($obj->entity==2) {
+			$tmprefix='12';
+		}
+		//BDC
+		if ($obj->entity==4) {
+			$tmprefix='21';
+		}
+		//Propre
+		if ($obj->entity==5) {
+			$tabfac [$obj->rowid] ["compta_ana"] = '3'.substr($obj->projet_ref,7,4);
+		} else {
+			$tabfac [$obj->rowid] ["compta_ana"] = $tmprefix.$obj->pr_cd_analytics;
+		}
 		$tabttc[$obj->rowid][$compta_soc] += $obj->total_ttc;
 		$tabht[$obj->rowid][$compta_prod] += $obj->total_ht;
 		$tabtva[$obj->rowid][$compta_tva] += $obj->total_tva;
@@ -324,7 +353,7 @@ if (GETPOST('action') == 'export_csv')
   			{
   				print '"'.$date.'"'.$sep;
   				print '"'.$val["ref"].'"'.$sep;
-  				print '"'.html_entity_decode($k).'"'.$sep.'"'.$langs->trans("Products").'"'.$sep.'"'.($mt>=0?price($mt):'').'"'.$sep.'"'.($mt<0?price(-$mt):'').'"';
+  				print '"'.html_entity_decode($k).'"'.$sep.'"'.$langs->trans("Products").'"'.$sep.'"'.($mt>=0?price($mt):'').'"'.$sep.'"'.($mt<0?price(-$mt):'').'"'. $sep . '"'. $val['projet_ref']. '"'. $sep . '"'. $val['compta_ana']. '"';
   				print "\n";
   			}
   		}
@@ -336,7 +365,7 @@ if (GETPOST('action') == 'export_csv')
   		    {
   				print '"'.$date.'"'.$sep;
   				print '"'.$val["ref"].'"'.$sep;
-  				print '"'.html_entity_decode($k).'"'.$sep.'"'.$langs->trans("VAT").'"'.$sep.'"'.($mt>=0?price($mt):'').'"'.$sep.'"'.($mt<0?price(-$mt):'').'"';
+  				print '"'.html_entity_decode($k).'"'.$sep.'"'.$langs->trans("VAT").'"'.$sep.'"'.($mt>=0?price($mt):'').'"'.$sep.'"'.($mt<0?price(-$mt):'').'"'. $sep . '"'. $val['projet_ref']. '"'. $sep . '"'. $val['compta_ana']. '"';
   				print "\n";
   			}
   		}
@@ -344,7 +373,7 @@ if (GETPOST('action') == 'export_csv')
   		print '"'.$val["ref"].'"'.$sep;
   		foreach ($tabttc[$key] as $k => $mt)
   		{
-  			print '"'.html_entity_decode($k).'"'.$sep.'"'.utf8_decode($companystatic->name).'"'.$sep.'"'.($mt<0?price(-$mt):'').'"'.$sep.'"'.($mt>=0?price($mt):'').'"';
+  			print '"'.html_entity_decode($k).'"'.$sep.'"'.utf8_decode($companystatic->name).'"'.$sep.'"'.($mt<0?price(-$mt):'').'"'.$sep.'"'.($mt>=0?price($mt):'').'"'. $sep . '"'. $val['projet_ref']. '"'. $sep . '"'. $val['compta_ana']. '"';
   		}
   		print "\n";
   	}
@@ -403,6 +432,8 @@ report_header($nom,$nomlink,$period,$periodlink,$description,$builddate,$exportl
 	print "<td>".$langs->trans("Piece").' ('.$langs->trans("InvoiceRef").")</td>";
 	print "<td>".$langs->trans("Account")."</td>";
 	print "<t><td>".$langs->trans("Type")."</td><td align='right'>".$langs->trans("Debit")."</td><td align='right'>".$langs->trans("Credit")."</td>";
+	print "<td align='right'>" . $langs->trans ( "Projet" ) . "</td>";
+	print "<th align='right'>" . $langs->trans ( "Compta Analytique" ) . "</th>";
 	print "</tr>\n";
 
 	$var=true;
@@ -433,6 +464,8 @@ report_header($nom,$nomlink,$period,$periodlink,$description,$builddate,$exportl
 				print "<td>".length_accountg($k)."</td><td>".$langs->trans("Products")."</td>";
 				print '<td align="right">'.($mt>=0?price($mt):'')."</td>";
 				print '<td align="right">'.($mt<0?price(-$mt):'')."</td>";
+				print '<td align="right">'.$val['projet_ref'].'</td>';
+				print '<td align="right">'.$val['compta_ana'].'</td>';
 				print "</tr>";
 			}
 		}
@@ -449,6 +482,8 @@ report_header($nom,$nomlink,$period,$periodlink,$description,$builddate,$exportl
 				print "<td>".length_accountg($k)."</td><td>".$langs->trans("VAT")."</td>";
 				print '<td align="right">'.($mt>=0?price($mt):'')."</td>";
 				print '<td align="right">'.($mt<0?price(-$mt):'')."</td>";
+				print '<td align="right">'.$val['projet_ref'].'</td>';
+				print '<td align="right">'.$val['compta_ana'].'</td>';
 				print "</tr>";
 			}
 		}
@@ -469,6 +504,8 @@ report_header($nom,$nomlink,$period,$periodlink,$description,$builddate,$exportl
 	      print "</td>";
 		    print '<td align="right">'.($mt<0?-price(-$mt):'')."</td>";
 		    print '<td align="right">'.($mt>=0?price($mt):'')."</td>";
+		    print '<td align="right">'.$val['projet_ref'].'</td>';
+		    print '<td align="right">'.$val['compta_ana'].'</td>';
 		}
 		print "</tr>";
 
