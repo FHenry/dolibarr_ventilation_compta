@@ -53,7 +53,9 @@ $accounting = new AccountingAccount ( $db );
 
 // action
 if ($action == 'add') {
-
+    if(GETPOST('cancel') != '')
+        Header ( "Location: account.php" );
+    else{
 	$sql = 'SELECT pcg_version FROM ' . MAIN_DB_PREFIX . 'accounting_system WHERE rowid=' . $conf->global->CHARTOFACCOUNTS;
 	dol_syslog('accountingex/admin/fiche.php:: add sql='.$sql);
 	$result = $db->query ( $sql );
@@ -83,6 +85,7 @@ if ($action == 'add') {
 		}
 	}
 	Header ( "Location: account.php" );
+    }
 } // Update record
 else if ($action == 'edit') {
 	if (! GETPOST ( 'cancel', 'alpha' )) {

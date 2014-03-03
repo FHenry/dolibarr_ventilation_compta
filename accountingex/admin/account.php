@@ -26,15 +26,11 @@
  */
 
 // Dolibarr environment
-$res = @include ("../main.inc.php");
-if (! $res && file_exists ( "../main.inc.php" ))
-	$res = @include ("../main.inc.php");
-if (! $res && file_exists ( "../../main.inc.php" ))
-	$res = @include ("../../main.inc.php");
-if (! $res && file_exists ( "../../../main.inc.php" ))
-	$res = @include ("../../../main.inc.php");
-if (! $res)
-	die ( "Include of main fails" );
+$res=@include("../main.inc.php");
+if (! $res && file_exists("../main.inc.php")) $res=@include("../main.inc.php");
+if (! $res && file_exists("../../main.inc.php")) $res=@include("../../main.inc.php");
+if (! $res && file_exists("../../../main.inc.php")) $res=@include("../../../main.inc.php");
+if (! $res) die("Include of main fails");
 	
 	// Class
 
@@ -46,10 +42,8 @@ $langs->load ( "compta" );
 $langs->load ( "accountingex@accountingex" );
 
 // Security check
-if ($user->societe_id > 0)
-	accessforbidden ();
-if (! $user->rights->accountingex->admin)
-	accessforbidden ();
+if ($user->societe_id > 0) accessforbidden();
+if (!$user->rights->accountingex->admin) accessforbidden();
 	
 // filter
 $sortfield = GETPOST ( "sortfield", 'alpha' );
@@ -73,8 +67,7 @@ $pcgver = $conf->global->CHARTOFACCOUNTS;
 
 $sql2 = "SELECT aa.rowid, aa.fk_pcg_version, aa.pcg_type, aa.pcg_subtype, aa.account_number, aa.account_parent , aa.label, aa.active ";
 $sql2 .= " FROM " . MAIN_DB_PREFIX . "accountingaccount as aa, " . MAIN_DB_PREFIX . "accounting_system as asy";
-$sql2 .= " WHERE aa.active = 1";
-$sql2 .= " AND aa.fk_pcg_version = asy.pcg_version"; 
+$sql2 .= " WHERE aa.fk_pcg_version = asy.pcg_version"; 
 $sql2 .= " AND asy.rowid = ".$pcgver;
 
 if (strlen ( trim ( $_GET ["search_account"] ) )) {
