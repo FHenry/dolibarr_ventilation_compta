@@ -76,7 +76,8 @@ $year_current = strftime ( "%Y", dol_now () );
 $current_month = strftime ( "%m", dol_now () );
 $pastmonth = strftime ( "%m", dol_now () ) - 1;
 $pastmonthyear = $year_current;
-if ($pastmonth == 0) {
+if ($pastmonth == 0)
+{
 	$pastmonth = 12;
 	$pastmonthyear --;
 }
@@ -123,7 +124,8 @@ $sql .= " ORDER BY f.datef";
 
 dol_syslog('/accountingex/journal/sellsjournal.php sql='.$sql);
 $result = $db->query ( $sql );
-if ($result) {
+if ($result)
+{
 	$tabfac = array ();
 	$tabht = array ();
 	$tabtva = array ();
@@ -133,20 +135,20 @@ if ($result) {
 	$num = $db->num_rows ( $result );
 	$i = 0;
 	$resligne = array ();
-	while ( $i < $num ) {
+   	while ($i < $num)
+   	{
 		$obj = $db->fetch_object ( $result );
 		// les variables
 		$cptcli = (! empty ( $conf->global->COMPTA_ACCOUNT_CUSTOMER )) ? $conf->global->COMPTA_ACCOUNT_CUSTOMER : $langs->trans ( "CodeNotDef" );
 		$compta_soc = (! empty ( $obj->code_compta )) ? $obj->code_compta : $cptcli;
 		
 		$compta_prod = $obj->compte;
-		if (empty ( $compta_prod )) {
-			if ($obj->product_type == 0)
-				$compta_prod = (! empty ( $conf->global->COMPTA_PRODUCT_SOLD_ACCOUNT )) ? $conf->global->COMPTA_PRODUCT_SOLD_ACCOUNT : $langs->trans ( "CodeNotDef" );
-			else
-				$compta_prod = (! empty ( $conf->global->COMPTA_SERVICE_SOLD_ACCOUNT )) ? $conf->global->COMPTA_SERVICE_SOLD_ACCOUNT : $langs->trans ( "CodeNotDef" );
+		if (empty($compta_prod))
+		{
+			if($obj->product_type == 0) $compta_prod = (! empty($conf->global->COMPTA_PRODUCT_SOLD_ACCOUNT))?$conf->global->COMPTA_PRODUCT_SOLD_ACCOUNT:$langs->trans("CodeNotDef");
+			else $compta_prod = (! empty($conf->global->COMPTA_SERVICE_SOLD_ACCOUNT))?$conf->global->COMPTA_SERVICE_SOLD_ACCOUNT:$langs->trans("CodeNotDef");
 		}
-		$cpttva = (! empty ( $conf->global->COMPTA_VAT_ACCOUNT )) ? $conf->global->COMPTA_VAT_ACCOUNT : $langs->trans ( "CodeNotDef" );
+	    $cpttva = (! empty ( $conf->global->COMPTA_VAT_ACCOUNT )) ? $conf->global->COMPTA_VAT_ACCOUNT : $langs->trans ( "CodeNotDef" );
 		$compta_tva = (! empty ( $obj->account_tva ) ? $obj->account_tva : $cpttva);
 		
 		// la ligne facture
@@ -191,13 +193,17 @@ if ($result) {
 		
 		$i ++;
 	}
-} else {
+}
+else 
+{
 	dol_print_error ( $db );
 }
-// write bookkeeping
-if (GETPOST ( 'action' ) == 'writeBookKeeping') {
-	foreach ( $tabfac as $key => $val ) {
-		foreach ( $tabttc [$key] as $k => $mt ) {
+// wrif (GETPOST('action') == 'writeBookKeeping')
+{
+	foreach ($tabfac as $key => $val)
+	{
+		foreach ($tabttc[$key] as $k => $mt)
+		{
 			$bookkeeping = new BookKeeping ( $db );
 			$bookkeeping->doc_date = $val ["date"];
 			$bookkeeping->doc_ref = $val ["ref"];
@@ -216,11 +222,13 @@ if (GETPOST ( 'action' ) == 'writeBookKeeping') {
 			$bookkeeping->create ();
 		}
 		// product
-		foreach ( $tabht [$key] as $k => $mt ) {
+		foreach ( $tabht [$key] as $k => $mt ) 
+		{
 			if ($mt) {
 				// get compte id and label
 			    $compte = new AccountingAccount($db);
-				if ($compte->fetch ( null, $k )) {
+				if ($compte->fetch ( null, $k )) 
+				{
 					$bookkeeping = new BookKeeping ( $db );
 					$bookkeeping->doc_date = $val ["date"];
 					$bookkeeping->doc_ref = $val ["ref"];
@@ -242,7 +250,8 @@ if (GETPOST ( 'action' ) == 'writeBookKeeping') {
 		}
 		// vat
 		// var_dump($tabtva);
-		foreach ( $tabtva [$key] as $k => $mt ) {
+		foreach ( $tabtva [$key] as $k => $mt ) 
+		{
 			if ($mt) {
 				$bookkeeping = new BookKeeping ( $db );
 				$bookkeeping->doc_date = $val ["date"];
@@ -288,7 +297,8 @@ if (GETPOST('action') == 'export_csv')
 			print $date . $sep;
 			print $conf->global->ACCOUNTINGEX_SELL_JOURNAL . $sep;
 			print length_accountg ( $conf->global->COMPTA_ACCOUNT_CUSTOMER ) . $sep;
-			foreach ( $tabttc [$key] as $k => $mt ) {
+			foreach ( $tabttc [$key] as $k => $mt ) 
+			{
 				print length_accounta ( html_entity_decode ( $k ) ) . $sep;
 				print ($mt < 0 ? 'C' : 'D') . $sep;
 				print ($mt <= 0 ? price ( - $mt ) : $mt) . $sep;
