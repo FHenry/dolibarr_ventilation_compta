@@ -33,14 +33,14 @@ if (! $res && file_exists("../../main.inc.php")) $res=@include("../../main.inc.p
 if (! $res && file_exists("../../../main.inc.php")) $res=@include("../../../main.inc.php");
 if (! $res) die("Include of main fails");
 
-
-dol_include_once ( "/core/lib/report.lib.php");
-dol_include_once ( "/core/lib/date.lib.php");
-dol_include_once ( "/accountingex/core/lib/account.lib.php" );
-dol_include_once ( "/fourn/class/fournisseur.facture.class.php");
-dol_include_once ( "/fourn/class/fournisseur.class.php");
-dol_include_once ( "/accountingex/class/bookkeeping.class.php");
-
+// Class
+dol_include_once("/core/lib/report.lib.php");
+dol_include_once("/core/lib/date.lib.php");
+dol_include_once("/accountingex/core/lib/account.lib.php");
+dol_include_once("/fourn/class/fournisseur.facture.class.php");
+dol_include_once("/fourn/class/fournisseur.class.php");
+dol_include_once("/accountingex/class/bookkeeping.class.php");
+dol_include_once("/accountingex/class/accountingaccount.class.php");
 
 // Langs
 $langs->load("compta");
@@ -196,7 +196,7 @@ if (GETPOST('action') == 'writeBookKeeping')
 			    $bookkeeping = new BookKeeping($db);
 			    $bookkeeping->doc_date = $val["date"];
 			    $bookkeeping->doc_ref = $val["ref"];
-			    $bookkeeping->doc_type = 'facture_fournisseur';
+			    $bookkeeping->doc_type = 'supplier_invoice';
 			    $bookkeeping->fk_doc = $key;
 			    $bookkeeping->fk_docdet = $val["fk_facturefourndet"];
 			    $bookkeeping->code_tiers = $tabcompany[$key]['code_fournisseur'];
@@ -217,17 +217,17 @@ if (GETPOST('action') == 'writeBookKeeping')
 			if ($mt)
 			{
 			    // get compte id and label
-			    $compte = new ComptaCompte($db);
+			    $compte = new AccountingAccount($db);
 			    if ($compte->fetch(null, $k))
 			    {
 				    $bookkeeping = new BookKeeping($db);
 				    $bookkeeping->doc_date = $val["date"];
 				    $bookkeeping->doc_ref = $val["ref"];
-				    $bookkeeping->doc_type = 'facture_fournisseur';
+				    $bookkeeping->doc_type = 'supplier_invoice';
 				    $bookkeeping->fk_doc = $key;
 				    $bookkeeping->fk_docdet = $val["fk_facturefourndet"];
 				    $bookkeeping->code_tiers = '';
-				    $bookkeeping->label_compte = $compte->intitule;
+				    $bookkeeping->label_compte = $compte->label;
 				    $bookkeeping->numero_compte = $k;
 				    $bookkeeping->montant = $mt;
 				    $bookkeeping->sens = ($mt < 0)?'D':'C';
@@ -251,7 +251,7 @@ if (GETPOST('action') == 'writeBookKeeping')
 				    $bookkeeping = new BookKeeping($db);
 				    $bookkeeping->doc_date = $val["date"];
 				    $bookkeeping->doc_ref = $val["ref"];
-				    $bookkeeping->doc_type = 'facture_fournisseur';
+				    $bookkeeping->doc_type = 'supplier_invoice';
 				    $bookkeeping->fk_doc = $key;
 				    $bookkeeping->fk_docdet = $val["fk_facturefourndet"];
 				    $bookkeeping->code_tiers = '';

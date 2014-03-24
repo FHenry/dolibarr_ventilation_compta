@@ -6,7 +6,7 @@
  * Copyright (C) 2013		   Christophe Battarel	<christophe.battarel@altairis.fr>
  * Copyright (C) 2013-2014 Alexandre Spangaro	  <alexandre.spangaro@gmail.com>
  * Copyright (C) 2013      Florian Henry	      <florian.henry@open-concept.pro>
- * Copyright (C) 2013      Olivier Geffroy      <jeff@jeffinfo.com>
+ * Copyright (C) 2013-2014 Olivier Geffroy      <jeff@jeffinfo.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,14 +30,10 @@
 
 // Dolibarr environment
 $res = @include ("../main.inc.php");
-if (! $res && file_exists ( "../main.inc.php" ))
-	$res = @include ("../main.inc.php");
-if (! $res && file_exists ( "../../main.inc.php" ))
-	$res = @include ("../../main.inc.php");
-if (! $res && file_exists ( "../../../main.inc.php" ))
-	$res = @include ("../../../main.inc.php");
-if (! $res)
-	die ( "Include of main fails" );
+if (! $res && file_exists("../main.inc.php")) $res=@include("../main.inc.php");
+if (! $res && file_exists("../../main.inc.php")) $res=@include("../../main.inc.php");
+if (! $res && file_exists("../../../main.inc.php")) $res=@include("../../../main.inc.php");
+if (! $res) die("Include of main fails");
 	
 	// Class
 dol_include_once ( "/core/lib/report.lib.php" );
@@ -46,7 +42,7 @@ dol_include_once ( "/accountingex/core/lib/account.lib.php" );
 dol_include_once ( "/compta/facture/class/facture.class.php" );
 dol_include_once ( "/societe/class/client.class.php" );
 dol_include_once ( "/accountingex/class/bookkeeping.class.php" );
-dol_include_once ( "/accountingex/class/comptacompte.class.php" );
+dol_include_once("/accountingex/class/accountingaccount.class.php");
 
 // Langs
 $langs->load ( "compta" );
@@ -63,10 +59,8 @@ $date_endday = GETPOST ( 'date_endday' );
 $date_endyear = GETPOST ( 'date_endyear' );
 
 // Security check
-if ($user->societe_id > 0)
-	accessforbidden ();
-if (! $user->rights->accountingex->access)
-	accessforbidden ();
+if ($user->societe_id > 0) accessforbidden();
+if (!$user->rights->accountingex->access) accessforbidden();
 	
 	/*
  * Actions
@@ -207,7 +201,7 @@ if (GETPOST ( 'action' ) == 'writeBookKeeping') {
 			$bookkeeping = new BookKeeping ( $db );
 			$bookkeeping->doc_date = $val ["date"];
 			$bookkeeping->doc_ref = $val ["ref"];
-			$bookkeeping->doc_type = 'facture_client';
+		    $bookkeeping->doc_type = 'customer_invoice';
 			$bookkeeping->fk_doc = $key;
 			$bookkeeping->fk_docdet = $val ["fk_facturedet"];
 			$bookkeeping->code_tiers = $tabcompany [$key] ['code_client'];
@@ -225,17 +219,17 @@ if (GETPOST ( 'action' ) == 'writeBookKeeping') {
 		foreach ( $tabht [$key] as $k => $mt ) {
 			if ($mt) {
 				// get compte id and label
-				$compte = new ComptaCompte ( $db );
+			    $compte = new AccountingAccount($db);
 				if ($compte->fetch ( null, $k )) {
 					$bookkeeping = new BookKeeping ( $db );
 					$bookkeeping->doc_date = $val ["date"];
 					$bookkeeping->doc_ref = $val ["ref"];
-					$bookkeeping->doc_type = 'facture_client';
+				    $bookkeeping->doc_type = 'customer_invoice';
 					$bookkeeping->fk_doc = $key;
 					$bookkeeping->fk_docdet = $val ["fk_facturedet"];
 					$bookkeeping->code_tiers = '';
 					$bookkeeping->numero_compte = $k;
-					$bookkeeping->label_compte = $compte->intitule;
+				    $bookkeeping->label_compte = $compte->label;
 					$bookkeeping->montant = $mt;
 					$bookkeeping->sens = ($mt < 0) ? 'D' : 'C';
 					$bookkeeping->debit = ($mt < 0) ? $mt : 0;
@@ -253,7 +247,7 @@ if (GETPOST ( 'action' ) == 'writeBookKeeping') {
 				$bookkeeping = new BookKeeping ( $db );
 				$bookkeeping->doc_date = $val ["date"];
 				$bookkeeping->doc_ref = $val ["ref"];
-				$bookkeeping->doc_type = 'facture_client';
+			    $bookkeeping->doc_type = 'customer_invoice';
 				$bookkeeping->fk_doc = $key;
 				$bookkeeping->fk_docdet = $val ["fk_facturedet"];
 				$bookkeeping->fk_compte = $compte->id;
@@ -272,7 +266,8 @@ if (GETPOST ( 'action' ) == 'writeBookKeeping') {
 	}
 }
 // export csv
-if (GETPOST ( 'action' ) == 'export_csv') {
+if (GETPOST('action') == 'export_csv')
+{
 	$sep = $conf->global->ACCOUNTINGEX_SEPARATORCSV;
 	
 	header ( 'Content-Type: text/csv' );
@@ -282,7 +277,8 @@ if (GETPOST ( 'action' ) == 'export_csv') {
 	
 	if ($conf->global->ACCOUNTINGEX_MODELCSV == 1) 	// Modèle Cegid Expert
 	{
-		foreach ( $tabfac as $key => $val ) {
+      foreach ($tabfac as $key => $val)
+    	{
 			$companystatic->id = $tabcompany [$key] ['id'];
 			$companystatic->name = $tabcompany [$key] ['name'];
 			$companystatic->client = $tabcompany [$key] ['code_client'];
@@ -302,8 +298,10 @@ if (GETPOST ( 'action' ) == 'export_csv') {
 			print "\n";
 			
 			// Production
-			foreach ( $tabht [$key] as $k => $mt ) {
-				if ($mt) {
+    		foreach ($tabht[$key] as $k => $mt)
+    		{
+    			if ($mt)
+    			{
 					print $date . $sep;
 					print $conf->global->ACCOUNTINGEX_SELL_JOURNAL . $sep;
 					print length_accountg ( html_entity_decode ( $k ) ) . $sep;
@@ -316,8 +314,10 @@ if (GETPOST ( 'action' ) == 'export_csv') {
 				}
 			}
 			// Tva
-			foreach ( $tabtva [$key] as $k => $mt ) {
-				if ($mt) {
+    		foreach ($tabtva[$key] as $k => $mt)
+    		{
+    		  if ($mt)
+    		  {
 					print $date . $sep;
 					print $conf->global->ACCOUNTINGEX_SELL_JOURNAL . $sep;
 					print length_accountg ( html_entity_decode ( $k ) ) . $sep;
@@ -330,8 +330,11 @@ if (GETPOST ( 'action' ) == 'export_csv') {
 				}
 			}
 		}
-	} else {
-		foreach ( $tabfac as $key => $val ) {
+    }
+    else
+    {
+      foreach ($tabfac as $key => $val)
+    	{
 			$companystatic->id = $tabcompany [$key] ['id'];
 			$companystatic->name = $tabcompany [$key] ['name'];
 			$companystatic->client = $tabcompany [$key] ['code_client'];
@@ -339,32 +342,39 @@ if (GETPOST ( 'action' ) == 'export_csv') {
 			$date = dol_print_date ( $db->jdate ( $val ["date"] ), 'day' );
 			print '"' . $date . '"' . $sep;
 			print '"' . $val ["ref"] . '"' . $sep;
-			foreach ( $tabttc [$key] as $k => $mt ) {
-				print '"' . length_accounta ( html_entity_decode ( $k ) ) . '"' . $sep . '"' . utf8_decode ( $companystatic->name ) . '"' . $sep . '"' . ($mt >= 0 ? price ( $mt ) : '') . '"' . $sep . '"' . ($mt < 0 ? price ( - $mt ) : '') . '"'. $sep . '"'. $val['projet_ref']. '"'. $val['compta_ana']. '"';
+    		foreach ($tabttc[$key] as $k => $mt)
+    		{
+    			print '"'.length_accounta(html_entity_decode($k)).'"'.$sep.'"'.utf8_decode($companystatic->name).'"'.$sep.'"'.($mt>=0?price($mt):'').'"'.$sep.'"'.($mt<0?price(-$mt):'').'"';
 			}
 			print "\n";
 			// product
-			foreach ( $tabht [$key] as $k => $mt ) {
-				if ($mt) {
+    		foreach ($tabht[$key] as $k => $mt)
+    		{
+    			if ($mt)
+    			{
 					print '"' . $date . '"' . $sep;
 					print '"' . $val ["ref"] . '"' . $sep;
-					print '"' . length_accountg ( html_entity_decode ( $k ) ) . '"' . $sep . '"' . $langs->trans ( "Products" ) . '"' . $sep . '"' . ($mt < 0 ? price ( - $mt ) : '') . '"' . $sep . '"' . ($mt >= 0 ? price ( $mt ) : '') . '"'. $sep . '"'. $val['projet_ref']. '"'. $sep . '"'. $val['compta_ana']. '"';
+    				print '"'.length_accountg(html_entity_decode($k)).'"'.$sep.'"'.$langs->trans("Products").'"'.$sep.'"'.($mt<0?price(-$mt):'').'"'.$sep.'"'.($mt>=0?price($mt):'').'"';
 					print "\n";
 				}
 			}
 			// vat
 			// var_dump($tabtva);
-			foreach ( $tabtva [$key] as $k => $mt ) {
-				if ($mt) {
+    		foreach ($tabtva[$key] as $k => $mt)
+    		{
+    		  if ($mt)
+    		  {
 					print '"' . $date . '"' . $sep;
 					print '"' . $val ["ref"] . '"' . $sep;
-					print '"' . length_accountg ( html_entity_decode ( $k ) ) . '"' . $sep . '"' . $langs->trans ( "VAT" ) . '"' . $sep . '"' . ($mt < 0 ? price ( - $mt ) : '') . '"' . $sep . '"' . ($mt >= 0 ? price ( $mt ) : '') . '"'. $sep . '"'. $val['projet_ref']. '"'.  $val['compta_ana']. '"';
+    			print '"'.length_accountg(html_entity_decode($k)).'"'.$sep.'"'.$langs->trans("VAT").'"'.$sep.'"'.($mt<0?price(-$mt):'').'"'.$sep.'"'.($mt>=0?price($mt):'').'"';
 					print "\n";
 				}
 			}
 		}
 	}
-} else {
+}
+else
+{
 	
 	$form = new Form ( $db );
 	
@@ -425,7 +435,8 @@ if (GETPOST ( 'action' ) == 'export_csv') {
 	$invoicestatic = new Facture ( $db );
 	$companystatic = new Client ( $db );
 	
-	foreach ( $tabfac as $key => $val ) {
+	foreach ($tabfac as $key => $val)
+	{
 		$invoicestatic->id = $key;
 		$invoicestatic->ref = $val ["ref"];
 		$invoicestatic->type = $val ["type"];
@@ -437,7 +448,8 @@ if (GETPOST ( 'action' ) == 'export_csv') {
 		// print "<td>".$conf->global->COMPTA_JOURNAL_SELL."</td>";
 		print "<td>" . $date . "</td>";
 		print "<td>" . $invoicestatic->getNomUrl ( 1 ) . "</td>";
-		foreach ( $tabttc [$key] as $k => $mt ) {
+		foreach ($tabttc[$key] as $k => $mt)
+		{
 			$companystatic->id = $tabcompany [$key] ['id'];
 			$companystatic->name = $tabcompany [$key] ['name'];
 			$companystatic->client = $tabcompany [$key] ['code_client'];
@@ -450,8 +462,10 @@ if (GETPOST ( 'action' ) == 'export_csv') {
 		}
 		print "</tr>";
 		// product
-		foreach ( $tabht [$key] as $k => $mt ) {
-			if ($mt) {
+		foreach ($tabht[$key] as $k => $mt)
+		{
+			if ($mt)
+			{
 				print "<tr " . $bc [$var] . ">";
 				// print "<td>".$conf->global->COMPTA_JOURNAL_SELL."</td>";
 				print "<td>" . $date . "</td>";
@@ -464,8 +478,10 @@ if (GETPOST ( 'action' ) == 'export_csv') {
 		}
 		// vat
 		// var_dump($tabtva);
-		foreach ( $tabtva [$key] as $k => $mt ) {
-			if ($mt) {
+		foreach ($tabtva[$key] as $k => $mt)
+		{
+		    if ($mt)
+		    {
 				print "<tr " . $bc [$var] . ">";
 				// print "<td>".$conf->global->COMPTA_JOURNAL_SELL."</td>";
 				print "<td>" . $date . "</td>";

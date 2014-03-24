@@ -2,8 +2,8 @@
 /* Copyright (C) 2002-2005 Rodolphe Quiedeville <rodolphe@quiedeville.org>
  * Copyright (C) 2004      Eric Seigne          <eric.seigne@ryxeo.com>
  * Copyright (C) 2004      Laurent Destailleur  <eldy@users.sourceforge.net>
- * Copyright (C) 2013      Olivier Geffroy      <jeff@jeffinfo.com>
- * Copyright (C) 2013      Alexandre Spangaro   <alexandre.spangaro@fidurex.fr>  
+ * Copyright (C) 2013-2014 Olivier Geffroy      <jeff@jeffinfo.com>
+ * Copyright (C) 2013-2014 Alexandre Spangaro   <alexandre.spangaro@fidurex.fr>  
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,8 +35,8 @@ if (! $res && file_exists("../../../main.inc.php")) $res=@include("../../../main
 if (! $res) die("Include of main fails");
 
 // Class
-require_once(DOL_DOCUMENT_ROOT."/fourn/class/fournisseur.facture.class.php");
-require_once(DOL_DOCUMENT_ROOT."/fourn/class/fournisseur.product.class.php");
+dol_include_once("/fourn/class/fournisseur.facture.class.php");
+dol_include_once("/fourn/class/fournisseur.product.class.php");
 
 // Langs
 $langs->load("compta");
@@ -133,17 +133,20 @@ if ($resultCompte)
  */
 $page = $_GET["page"];
 if ($page < 0) $page = 0;
-$limit = $conf->liste_limit;
+$limit = $conf->global->ACCOUNTINGEX_LIMIT_LIST_VENTILATION;
 $offset = $limit * $page ;
 
 $sql = "SELECT f.ref, f.rowid as facid, f.ref_supplier, l.fk_product, l.description, l.total_ht as price, l.rowid, l.fk_code_ventilation, ";
 $sql.= " p.rowid as product_id, p.ref as product_ref, p.label as product_label, p.fk_product_type as type, p.accountancy_code_buy as code_buy";
-$sql .= " FROM ".MAIN_DB_PREFIX."facture_fourn as f";
-$sql .= " , ".MAIN_DB_PREFIX."facture_fourn_det as l";
+$sql.= " FROM ".MAIN_DB_PREFIX."facture_fourn as f";
+$sql.= " , ".MAIN_DB_PREFIX."facture_fourn_det as l";
 $sql.= " LEFT JOIN ".MAIN_DB_PREFIX."product as p ON p.rowid = l.fk_product";
-$sql .= " WHERE f.rowid = l.fk_facture_fourn AND f.fk_statut > 0 AND fk_code_ventilation = 0";
-$sql .= " ORDER BY l.rowid DESC ".$db->plimit($limit+1,$offset);
+$sql.= " WHERE f.rowid = l.fk_facture_fourn AND f.fk_statut > 0 AND fk_code_ventilation = 0";
+$sql.= " ORDER BY l.rowid";
+if ($conf->global->ACCOUNTINGEX_LIST_SORT_VENTILATION > 0) { $sql.= " DESC "; }
+$sql.= $db->plimit($limit+1,$offset);
 
+dol_syslog('accountingext/suppluier/liste.php:: sql='.$sql);
 $result = $db->query($sql);
 if ($result)
 {
@@ -154,8 +157,8 @@ if ($result)
 
   print '<td align="left"><br><b>'.$langs->trans("DescVentilTodoSupplier").'</b></br></td>';
 
-	print '<form action="liste.php" method="post">'."\n";
-	print '<input type="hidden" name="action" value="ventil">';
+  print '<form action="liste.php" method="post">'."\n";
+  print '<input type="hidden" name="action" value="ventil">';
 
   print '<table class="noborder" width="100%">';
   print '<tr class="liste_titre"><td>Facture</td>';
@@ -169,8 +172,8 @@ if ($result)
   print "</tr>\n";
   
   $facturefourn_static=new FactureFournisseur($db);
-	$productfourn_static=new ProductFournisseur($db);
-	$form = new Form($db);           
+  $productfourn_static=new ProductFournisseur($db);
+  $form = new Form($db);           
 
   $var=True;
   while ($i < min($num_lignes, $limit))
@@ -209,15 +212,14 @@ if ($result)
       print $objp->code_buy;
       print '</td>';
 
-		//Colonne choix du compte
-		print '<td align="center">';
-		print $form->selectarray("codeventil[]",$cgs, $cgn[$objp->code_buy]);
-		print '</td>';
-		//Colonne choix ligne a ventiler
-		print '<td align="center">';
-		print '<input type="checkbox" name="mesCasesCochees[]" value="'.$objp->rowid."_".$i.'"'.($objp->code_buy?"checked":"").'/>';
-		print '</td>';
-
+  		//Colonne choix du compte
+  		print '<td align="center">';
+  		print $form->selectarray("codeventil[]",$cgs, $cgn[$objp->code_buy]);
+  		print '</td>';
+  		//Colonne choix ligne a ventiler
+  		print '<td align="center">';
+  		print '<input type="checkbox" name="mesCasesCochees[]" value="'.$objp->rowid."_".$i.'"'.($objp->code_buy?"checked":"").'/>';
+  		print '</td>';
 
       print "</tr>";
       $i++;
