@@ -173,7 +173,7 @@ if ($result)
 		}
 		//Propre
 		if ($obj->entity==5) {
-			$tabfac [$obj->rowid] ["compta_ana"] = '3'.substr($obj->projet_ref,7,4);
+			$tabfac [$obj->rowid] ["compta_ana"] = substr($obj->projet_ref,7,4);
 		} else {
 			$tabfac [$obj->rowid] ["compta_ana"] = $tmprefix.$obj->pr_cd_analytics;
 		}
@@ -184,12 +184,12 @@ if ($result)
 			$tabht [$obj->rowid] [$compta_prod] = 0;
 		if (! isset ( $tabtva [$obj->rowid] [$compta_tva] ))
 			$tabtva [$obj->rowid] [$compta_tva] = 0;
-		$tabttc [$obj->rowid] [$compta_soc] += $obj->total_ttc;
-		$tabht [$obj->rowid] [$compta_prod] += $obj->total_ht;
-		$tabtva [$obj->rowid] [$compta_tva] += $obj->total_tva;
-		$tabcompany [$obj->rowid] = array (
-			'id' => $obj->socid,'name' => $obj->name,'code_client' => $obj->code_compta 
-		);
+			$tabttc [$obj->rowid] [$compta_soc] += $obj->total_ttc;
+			$tabht [$obj->rowid] [$compta_prod] += $obj->total_ht;
+			$tabtva [$obj->rowid] [$compta_tva] += $obj->total_tva;
+			$tabcompany [$obj->rowid] = array (
+				'id' => $obj->socid,'name' => $obj->name,'code_client' => $obj->code_compta 
+			);
 		
 		$i ++;
 	}
@@ -350,11 +350,20 @@ if (GETPOST('action') == 'export_csv')
 			$companystatic->client = $tabcompany [$key] ['code_client'];
 			
 			$date = dol_print_date ( $db->jdate ( $val ["date"] ), 'day' );
-			print '"' . $date . '"' . $sep;
-			print '"' . $val ["ref"] . '"' . $sep;
+			print '"0029"'.$sep;
+			print '"'.$val['compta_ana'].'"'.$sep;
+			print '"002"'.$sep;
+			
+			//print '"' . $date . '"' . $sep;
+			//print '"' . $val ["ref"] . '"' . $sep;
     		foreach ($tabttc[$key] as $k => $mt)
     		{
-    			print '"'.length_accounta(html_entity_decode($k)).'"'.$sep.'"'.utf8_decode($companystatic->name).'"'.$sep.'"'.($mt>=0?price($mt):'').'"'.$sep.'"'.($mt<0?price(-$mt):'').'"';
+    			print length_accounta(html_entity_decode($k)).'"'.$sep.'"';
+    			print utf8_decode($companystatic->name).'"'.$sep;
+    			print '"'.($mt>=0?price($mt):'').'"'.$sep.'"';
+    			print ($mt<0?price(-$mt):'').'"'.$sep;
+    			print '"029CCCC"'.$sep;
+    			print '"' . $date . '"';
 			}
 			print "\n";
 			// product
@@ -362,9 +371,17 @@ if (GETPOST('action') == 'export_csv')
     		{
     			if ($mt)
     			{
-					print '"' . $date . '"' . $sep;
-					print '"' . $val ["ref"] . '"' . $sep;
-    				print '"'.length_accountg(html_entity_decode($k)).'"'.$sep.'"'.$langs->trans("Products").'"'.$sep.'"'.($mt<0?price(-$mt):'').'"'.$sep.'"'.($mt>=0?price($mt):'').'"';
+    				print '"0029"'.$sep;
+    				print '"'.$val['compta_ana'].'"'.$sep;
+    				print '"002"'.$sep;
+					//print '"' . $date . '"' . $sep;
+					//print '"' . $val ["ref"] . '"' . $sep;
+    				print '"'.length_accountg(html_entity_decode($k)).'"'.$sep.'"';
+    				print $langs->trans("Products").'"'.$sep;
+    				print '"'.($mt<0?price(-$mt):'').'"'.$sep;
+    				print '"'.($mt>=0?price($mt):'').'"'.$sep;
+    				print '""'.$sep;
+    				print '"' . $date . '"';
 					print "\n";
 				}
 			}
@@ -374,9 +391,17 @@ if (GETPOST('action') == 'export_csv')
     		{
     		  if ($mt)
     		  {
-					print '"' . $date . '"' . $sep;
-					print '"' . $val ["ref"] . '"' . $sep;
-    			print '"'.length_accountg(html_entity_decode($k)).'"'.$sep.'"'.$langs->trans("VAT").'"'.$sep.'"'.($mt<0?price(-$mt):'').'"'.$sep.'"'.($mt>=0?price($mt):'').'"';
+    		  		print '"0029"'.$sep;
+    		  		print '"'.$val['compta_ana'].'"'.$sep;
+    		  		print '"002"'.$sep;
+					//print '"' . $date . '"' . $sep;
+					//print '"' . $val ["ref"] . '"' . $sep;
+    				print '"'.length_accountg(html_entity_decode($k)).'"'.$sep;
+    				print '"'.$langs->trans("VAT").'"'.$sep;
+    				print '"'.($mt<0?price(-$mt):'').'"'.$sep;
+    				print '"'.($mt>=0?price($mt):'').'"'.$sep;
+    				print '""'.$sep;
+    				print '"' . $date . '"';
 					print "\n";
 				}
 			}
