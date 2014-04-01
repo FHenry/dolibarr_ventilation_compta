@@ -146,7 +146,7 @@ $sql.= " ORDER BY l.rowid";
 if ($conf->global->ACCOUNTINGEX_LIST_SORT_VENTILATION > 0) { $sql.= " DESC "; }
 $sql.= $db->plimit($limit+1,$offset);
 
-dol_syslog('accountingext/suppluier/liste.php:: sql='.$sql);
+dol_syslog('accountingext/supplier/liste.php:: sql='.$sql);
 $result = $db->query($sql);
 if ($result)
 {
