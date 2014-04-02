@@ -344,7 +344,7 @@ if (GETPOST('action') == 'export_csv') {
 					print '"'.$val['compta_ana'].'"'.$sep;
 					print '"009"'.$sep;
 					print '"' . html_entity_decode($k) . '"' . $sep;
-					print '"' . $val["ref"] . '"' . $sep;
+					print '"' . utf8_decode($companystatic->name) . ' '.$val['ref_supplier'].'"'. $sep;
 					print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
 					print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
 					print '"029FFFF"'.$sep;
@@ -368,7 +368,7 @@ if (GETPOST('action') == 'export_csv') {
 					print '"'.$val['compta_ana'].'"'.$sep;
 					print '"009"'.$sep;
 					print '"' . html_entity_decode($k) . '"' . $sep;
-					print '"' . $val["ref"] . '"' . $sep;
+					print '"' . utf8_decode($companystatic->name) . ' '.$val['ref_supplier'].'"'. $sep;
 					print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
 					print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
 					print '"029FFFF"'.$sep;
