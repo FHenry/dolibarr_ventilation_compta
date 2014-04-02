@@ -106,6 +106,7 @@ $sql .= ' ,pextra.pr_cd_analytics';
 $sql .= ' ,proj.ref  as projet_ref';
 $sql .= ' ,proj.rowid as projet_id';
 $sql .= ' ,f.ref_supplier';
+$sql .= ' ,f.entity';
 $sql .= " FROM " . MAIN_DB_PREFIX . "facture_fourn_det fd";
 $sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "c_tva ct ON fd.tva_tx = ct.taux AND ct.fk_pays = '" . $idpays . "'";
 $sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "product p ON p.rowid = fd.fk_product";
@@ -343,10 +344,10 @@ if (GETPOST('action') == 'export_csv') {
 					print '"'.$val['compta_ana'].'"'.$sep;
 					print '"009"'.$sep;
 					print '"' . html_entity_decode($k) . '"' . $sep;
-					print '"' . $val["ref"] .' '.$val['ref_supplier'].'"'. $sep;
+					print '"' . $val["ref"] . '"' . $sep;
 					print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
 					print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
-					print '"029CCCC"'.$sep;
+					print '"029FFFF"'.$sep;
 					print '"' . $date . '"' . $sep;
 					
 					/*print '"' . $val["ref"] . '"' . $sep;
@@ -367,10 +368,10 @@ if (GETPOST('action') == 'export_csv') {
 					print '"'.$val['compta_ana'].'"'.$sep;
 					print '"009"'.$sep;
 					print '"' . html_entity_decode($k) . '"' . $sep;
-					print '"' . $val["ref"] .' '.$val['ref_supplier'].'"'. $sep;
+					print '"' . $val["ref"] . '"' . $sep;
 					print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
 					print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
-					print '"029CCCC"'.$sep;
+					print '"029FFFF"'.$sep;
 					print '"' . $date . '"' . $sep;
 					
 					/*
@@ -392,7 +393,7 @@ if (GETPOST('action') == 'export_csv') {
 				print '"' . utf8_decode($companystatic->name) . ' '.$val['ref_supplier'].'"'. $sep;
 				print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
 				print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
-				print '"029CCCC"'.$sep;
+				print '"029FFFF"'.$sep;
 				print '"' . $date . '"' . $sep;
 				/*
 				print '"' . $val['projet_ref'] . '"' . $sep;
