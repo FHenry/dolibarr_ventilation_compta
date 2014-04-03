@@ -161,15 +161,15 @@ if ($result)
 		//Centre des congrés
 		$tmprefix='N/A';
 		if ($obj->entity==3) {
-			$tmprefix='11';
+			$tmprefix='1';
 		}
 		//Parc des expo
 		if ($obj->entity==2) {
-			$tmprefix='12';
+			$tmprefix='2';
 		}
 		//BDC
 		if ($obj->entity==4) {
-			$tmprefix='21';
+			$tmprefix='3';
 		}
 		//Propre
 		if ($obj->entity==5) {
