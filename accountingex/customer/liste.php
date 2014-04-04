@@ -244,7 +244,7 @@ if ($result)
         
 		// Colonne choix ligne a ventiler
 		print '<td align="center">';
-		print '<input type="checkbox" name="mesCasesCochees[]" value="'.$objp->rowid."_".$i.'"'.($objp->code_sell?"checked":"").'/>';
+		print '<input type="checkbox" name="mesCasesCochees[]" value="'.$objp->rowid."_".$i.'"/>';
 		print '</td>';
 
 		print '</tr>';
