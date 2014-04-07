@@ -198,14 +198,18 @@ else
 {
 	dol_print_error ( $db );
 }
-// wrif (GETPOST('action') == 'writeBookKeeping')
+if (GETPOST('action') == 'writeBookKeeping')
 {
+	
+	$now=dol_now();
+	
 	foreach ($tabfac as $key => $val)
 	{
 		foreach ($tabttc[$key] as $k => $mt)
 		{
 			$bookkeeping = new BookKeeping ( $db );
 			$bookkeeping->doc_date = $val ["date"];
+			$bookkeeping->date_create = $now;
 			$bookkeeping->doc_ref = $val ["ref"];
 		    $bookkeeping->doc_type = 'customer_invoice';
 			$bookkeeping->fk_doc = $key;
@@ -231,6 +235,7 @@ else
 				{
 					$bookkeeping = new BookKeeping ( $db );
 					$bookkeeping->doc_date = $val ["date"];
+					$bookkeeping->date_create = $now;
 					$bookkeeping->doc_ref = $val ["ref"];
 				    $bookkeeping->doc_type = 'customer_invoice';
 					$bookkeeping->fk_doc = $key;
@@ -255,6 +260,7 @@ else
 			if ($mt) {
 				$bookkeeping = new BookKeeping ( $db );
 				$bookkeeping->doc_date = $val ["date"];
+				$bookkeeping->date_create = $now;
 				$bookkeeping->doc_ref = $val ["ref"];
 			    $bookkeeping->doc_type = 'customer_invoice';
 				$bookkeeping->fk_doc = $key;
@@ -358,11 +364,15 @@ if (GETPOST('action') == 'export_csv')
 			//print '"' . $val ["ref"] . '"' . $sep;
     		foreach ($tabttc[$key] as $k => $mt)
     		{
-    			print length_accounta(html_entity_decode($k)).'"'.$sep.'"';
-    			print utf8_decode($companystatic->name).'"'.$sep;
-    			print '"'.($mt>=0?price($mt):'').'"'.$sep.'"';
-    			print ($mt<0?price(-$mt):'').'"'.$sep;
-    			print '"029CCCC"'.$sep;
+    			print '"'.length_accounta(html_entity_decode($k)).'"'.$sep;
+    			print '"'.utf8_decode($companystatic->name).' '.$val ["ref"].'"'.$sep;
+    			print '"'.($mt>=0?price($mt):'').'"'.$sep;
+    			print '"'.($mt<0?price(-$mt):'').'"'.$sep;
+    			if ((substr($k,0,2)=='40') || (substr($k,0,2)=='41')) {
+    				print '"029CCCC"'.$sep;
+    			} else {
+    				print '""'.$sep;
+    			}
     			print '"' . $date . '"';
 			}
 			print "\n";
@@ -376,8 +386,9 @@ if (GETPOST('action') == 'export_csv')
     				print '"002"'.$sep;
 					//print '"' . $date . '"' . $sep;
 					//print '"' . $val ["ref"] . '"' . $sep;
-    				print '"'.length_accountg(html_entity_decode($k)).'"'.$sep.'"';
-    				print $langs->trans("Products").'"'.$sep;
+    				print '"'.length_accountg(html_entity_decode($k)).'"'.$sep;
+    				print '"'.utf8_decode($companystatic->name).' '.$val ["ref"].'"'.$sep;
+    				//print '"'.$langs->trans("Products").'"'.$sep;
     				print '"'.($mt<0?price(-$mt):'').'"'.$sep;
     				print '"'.($mt>=0?price($mt):'').'"'.$sep;
     				print '""'.$sep;
@@ -396,8 +407,10 @@ if (GETPOST('action') == 'export_csv')
     		  		print '"002"'.$sep;
 					//print '"' . $date . '"' . $sep;
 					//print '"' . $val ["ref"] . '"' . $sep;
+    		  		//print '"'.utf8_decode($companystatic->name).' '.$val ["ref"].'"'.$sep;
     				print '"'.length_accountg(html_entity_decode($k)).'"'.$sep;
-    				print '"'.$langs->trans("VAT").'"'.$sep;
+    				print '"'.utf8_decode($companystatic->name).' '.$val ["ref"].'"'.$sep;
+    				//print '"'.$langs->trans("VAT").'"'.$sep;
     				print '"'.($mt<0?price(-$mt):'').'"'.$sep;
     				print '"'.($mt>=0?price($mt):'').'"'.$sep;
     				print '""'.$sep;

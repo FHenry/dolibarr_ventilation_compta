@@ -33,6 +33,7 @@ class BookKeeping {
 	var $doc_date;
 	var $doc_type;
 	var $doc_ref;
+	var $date_create;
 	var $fk_doc;
 	var $fk_docdet;
 	var $code_tiers;
@@ -251,7 +252,7 @@ class BookKeeping {
 				
 				$now = dol_now ();
 				$sql = "INSERT INTO " . MAIN_DB_PREFIX . "bookkeeping (doc_date, doc_type, doc_ref,fk_doc,fk_docdet,code_tiers,numero_compte,label_compte,debit,credit,montant,sens,fk_user_author,import_key,code_journal,piece_num)";
-				$sql .= " VALUES ('" . $this->doc_date . "','" . $this->doc_type . "','" . $this->doc_ref . "'," . $this->fk_doc . "," . $this->fk_docdet . ",'" . $this->code_tiers . "','" . $this->numero_compte . "','" . $this->label_compte . "'," . $this->debit . "," . $this->credit . "," . $this->montant . ",'" . $this->sens . "'," . $user->id . ", '" . $now . "','" . $this->code_journal . "'," . $this->piece_num . ")";
+				$sql .= " VALUES ('" . $this->doc_date . "','" . $this->doc_type . "','" . $this->doc_ref . "'," . $this->fk_doc . "," . $this->fk_docdet . ",'" . $this->code_tiers . "','" . $this->numero_compte . "','" . $this->label_compte . "'," . $this->debit . "," . $this->credit . "," . $this->montant . ",'" . $this->sens . "'," . $user->id . ", '" . $this->date_create . "','" . $this->code_journal . "'," . $this->piece_num . ")";
 				
 				$resql = $this->db->query ( $sql );
 				if ($resql) {

@@ -193,6 +193,9 @@ if ($result) {
 }
 // write bookkeeping
 if (GETPOST('action') == 'writeBookKeeping') {
+	
+	$now=dol_now();
+	
 	foreach ($tabfac as $key => $val) {
 		foreach ($tabttc[$key] as $k => $mt) {
 			// get compte id and label
@@ -200,6 +203,7 @@ if (GETPOST('action') == 'writeBookKeeping') {
 			$bookkeeping = new BookKeeping($db);
 			$bookkeeping->doc_date = $val["date"];
 			$bookkeeping->doc_ref = $val["ref"];
+			$bookkeeping->date_create = $now;
 			$bookkeeping->doc_type = 'supplier_invoice';
 			$bookkeeping->fk_doc = $key;
 			$bookkeeping->fk_docdet = $val["fk_facturefourndet"];
@@ -224,6 +228,7 @@ if (GETPOST('action') == 'writeBookKeeping') {
 					$bookkeeping = new BookKeeping($db);
 					$bookkeeping->doc_date = $val["date"];
 					$bookkeeping->doc_ref = $val["ref"];
+					$bookkeeping->date_create = $now;
 					$bookkeeping->doc_type = 'supplier_invoice';
 					$bookkeeping->fk_doc = $key;
 					$bookkeeping->fk_docdet = $val["fk_facturefourndet"];
@@ -249,6 +254,7 @@ if (GETPOST('action') == 'writeBookKeeping') {
 				$bookkeeping = new BookKeeping($db);
 				$bookkeeping->doc_date = $val["date"];
 				$bookkeeping->doc_ref = $val["ref"];
+				$bookkeeping->date_create = $now;
 				$bookkeeping->doc_type = 'supplier_invoice';
 				$bookkeeping->fk_doc = $key;
 				$bookkeeping->fk_docdet = $val["fk_facturefourndet"];
