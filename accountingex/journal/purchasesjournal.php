@@ -353,15 +353,8 @@ if (GETPOST('action') == 'export_csv') {
 					print '"' . utf8_decode($companystatic->name) . ' '.$val['ref_supplier'].'"'. $sep;
 					print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
 					print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
-					print '"029FFFF"'.$sep;
+					print '""'.$sep;
 					print '"' . $date . '"' . $sep;
-					
-					/*print '"' . $val["ref"] . '"' . $sep;
-					
-					print '"' . $langs->trans("Products") . '"' . $sep;
-					
-					print '"' . $val['projet_ref'] . '"' . $sep;
-					print '"' . $val['compta_ana'] . '"';*/
 					print "\n";
 				}
 			}
@@ -377,13 +370,8 @@ if (GETPOST('action') == 'export_csv') {
 					print '"' . utf8_decode($companystatic->name) . ' '.$val['ref_supplier'].'"'. $sep;
 					print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
 					print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
-					print '"029FFFF"'.$sep;
+					print '""'.$sep;
 					print '"' . $date . '"' . $sep;
-					
-					/*
-					print '"' . $langs->trans("VAT") . '"' . $sep;
-					print '"' . $val['projet_ref'] . '"' . $sep;
-					print '"' . $val['compta_ana'] . '"';*/
 					print "\n";
 				}
 			}
@@ -391,19 +379,18 @@ if (GETPOST('action') == 'export_csv') {
 			print '"0029"'.$sep;
 			print '"'.$val['compta_ana'].'"'.$sep;
 			print '"009"'.$sep;
-			
-			//print '"' . $date . '"' . $sep;
-			//print '"' . $val["ref"] . '"' . $sep;
 			foreach ($tabttc[$key] as $k => $mt) {
 				print '"' . html_entity_decode($k) . '"' . $sep;
 				print '"' . utf8_decode($companystatic->name) . ' '.$val['ref_supplier'].'"'. $sep;
 				print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
 				print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
-				print '"029FFFF"'.$sep;
+				if ((substr($k,0,3)=='401') || (substr($k,0,3)=='409')) {
+					print '"029FFFF"'.$sep;
+				} else {
+					print '""'.$sep;
+				}
+
 				print '"' . $date . '"' . $sep;
-				/*
-				print '"' . $val['projet_ref'] . '"' . $sep;
-				print '"' . $val['compta_ana'] . '"';*/
 			}
 			print "\n";
 		}
