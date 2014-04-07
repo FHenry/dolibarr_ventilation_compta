@@ -384,7 +384,7 @@ if (GETPOST('action') == 'export_csv') {
 				print '"' . utf8_decode($companystatic->name) . ' '.$val['ref_supplier'].'"'. $sep;
 				print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
 				print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
-				if ((substr($k,0,3)=='401') || (substr($k,0,3)=='409')) {
+				if ((substr($k,0,3)=='401') || (substr($k,0,3)=='419')) {
 					print '"029FFFF"'.$sep;
 				} else {
 					print '""'.$sep;

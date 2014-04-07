@@ -391,7 +391,11 @@ if (GETPOST('action') == 'export_csv')
     				//print '"'.$langs->trans("Products").'"'.$sep;
     				print '"'.($mt<0?price(-$mt):'').'"'.$sep;
     				print '"'.($mt>=0?price($mt):'').'"'.$sep;
-    				print '""'.$sep;
+	    			if ((substr($k,0,2)=='40') || (substr($k,0,2)=='41')) {
+	    				print '"029CCCC"'.$sep;
+	    			} else {
+	    				print '""'.$sep;
+	    			}
     				print '"' . $date . '"';
 					print "\n";
 				}
