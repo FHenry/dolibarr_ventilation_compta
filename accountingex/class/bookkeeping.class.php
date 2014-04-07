@@ -259,7 +259,7 @@ class BookKeeping {
 				$sql .= $this->debit . "," . $this->credit . "," . $this->montant . ",'" . $this->sens . "'," . $user->id . ", '";
 				$sql .= $this->date_create . "','" . $this->code_journal . "'," . $this->piece_num . ")";
 				
-				dol_syslog ( get_class ( $sql ) . ":: create sql=" . $sql, LOG_DEBUG );
+				dol_syslog ( get_class ( $this ) . ":: create sql=" . $sql, LOG_DEBUG );
 				$resql = $this->db->query ( $sql );
 				if ($resql) {
 					$id = $this->db->last_insert_id ( MAIN_DB_PREFIX . "bookkeeping" );
