@@ -1,10 +1,10 @@
 <?php
-/* Copyright (C) 2001-2004 Rodolphe Quiedeville <rodolphe@quiedeville.org>
- * Copyright (C) 2004      Laurent Destailleur  <eldy@users.sourceforge.net>
- * Copyright (C) 2005      Simon TOSSER         <simon@kornog-computing.com>
- * Copyright (C) 2013      Olivier Geffroy      <jeff@jeffinfo.com>
- * Copyright (C) 2013-2014 Florian Henry	      <florian.henry@open-concept.pro>
- * Copyright (C) 2013-2014 Alexandre Spangaro   <alexandre.spangaro@gmail.com> 
+/* Copyright (C) 2001-2004 Rodolphe Quiedeville	<rodolphe@quiedeville.org>
+ * Copyright (C) 2004      Laurent Destailleur	<eldy@users.sourceforge.net>
+ * Copyright (C) 2005      Simon TOSSER			<simon@kornog-computing.com>
+ * Copyright (C) 2013      Olivier Geffroy		<jeff@jeffinfo.com>
+ * Copyright (C) 2013-2014 Florian Henry		<florian.henry@open-concept.pro>
+ * Copyright (C) 2013-2014 Alexandre Spangaro	<alexandre.spangaro@gmail.com>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,13 +18,12 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- *
  */
 
 /**
- * \file accountingex/supplier/index.php
- * \ingroup Accounting Expert
- * \brief Page accueil ventilation
+ * \file		accountingex/supplier/index.php
+ * \ingroup	Accounting Expert
+ * \brief		Page accueil ventilation
  */
 
 // Dolibarr environment
@@ -64,7 +63,7 @@ if ($year == 0) {
 	$year_start = $year;
 }
 
-// ValidateHistory
+// Validate History
 $action = GETPOST('action');
 if ($action == 'validatehistory') {
 	
@@ -242,7 +241,6 @@ if ($resql) {
 	$num = $db->num_rows($resql);
 	
 	while ( $i < $num ) {
-		
 		$row = $db->fetch_row($resql);
 		
 		print '<tr><td>' . $row[0] . '</td>';
@@ -260,16 +258,15 @@ if ($resql) {
 		print '<td align="center">' . price($row[12]) . '</td>';
 		print '<td align="center"><b>' . price($row[13]) . '</b></td>';
 		print '</tr>';
+		
 		$i ++;
 	}
+	
 	$db->free($resql);
 } else {
-	print $db->lasterror(); // affiche la derniere erreur sql
+	print $db->lasterror(); // show last sql error
 }
 print "</table>\n";
 
-$db->close();
-
 llxFooter();
-
-?>
+$db->close();

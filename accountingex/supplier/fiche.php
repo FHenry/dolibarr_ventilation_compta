@@ -1,8 +1,9 @@
 <?php
 /* Copyright (C) 2004       Rodolphe Quiedeville  <rodolphe@quiedeville.org>
  * Copyright (C) 2005       Simon TOSSER          <simon@kornog-computing.com>
- * Copyright (C) 2013-2014  Alexandre Spangaro    <alexandre.spangaro@gmail.com> 
- * Copyright (C) 2013-2014  Olivier Geffroy       <jeff@jeffinfo.com> 
+ * Copyright (C) 2013-2014  Alexandre Spangaro    <alexandre.spangaro@gmail.com>
+ * Copyright (C) 2013-2014  Olivier Geffroy       <jeff@jeffinfo.com>
+ * Copyright (C) 2013-2014 Florian Henry	      	<florian.henry@open-concept.pro>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +24,7 @@
  * \ingroup Accountign Expert
  * \brief Page fiche ventilation
  */
+
 // Dolibarr environment
 $res = @include ("../main.inc.php");
 if (! $res && file_exists("../main.inc.php"))
@@ -36,6 +38,7 @@ if (! $res)
 	
 	// Class
 dol_include_once("/fourn/class/fournisseur.facture.class.php");
+dol_include_once("/accountingex/class/html.formventilation.class.php");
 
 // Langs
 $langs->load("compta");
@@ -44,7 +47,9 @@ $langs->load("other");
 $langs->load("main");
 $langs->load("accountingex@accountingex");
 
-$mesg = '';
+$action = GETPOST('action');
+$id = GETPOST('id', 'int');
+$codeventil = GETPOST('codeventil');
 
 // Security check
 if ($user->societe_id > 0)
@@ -52,66 +57,47 @@ if ($user->societe_id > 0)
 if (! $user->rights->accountingex->access)
 	accessforbidden();
 
-if ($_POST["action"] == 'ventil' && $user->rights->accountingex->access) {
+if ($action == 'ventil' && $user->rights->accountingex->access) {
 	$sql = " UPDATE " . MAIN_DB_PREFIX . "facture_fourn_det";
-	$sql .= " SET fk_code_ventilation = " . $_POST["codeventil"];
-	$sql .= " WHERE rowid = " . $_GET["id"];
-	dol_syslog("Accountancy Expert :: Card Supplier :: Update sql=" . $sql, LOG_DEBUG);
+	$sql .= " SET fk_code_ventilation = " . $codeventil;
+	$sql .= " WHERE rowid = " . $id;
 	
-	$db->query($sql);
+	dol_syslog('accountingex/journal/sellsjournal.php:: $sql=' . $sql);
+	
+	$resql = $db->query($sql);
+	if (! $resql) {
+		setEventMessage($db->lasterror(), 'errors');
+	}
 }
 
 /*
  * View
  */
-llxHeader("", "", "Fiche ventilation");
+llxHeader("", "", "FicheVentilation");
 
 if ($cancel == $langs->trans("Cancel")) {
 	$action = '';
 }
 
 /*
- *
- *
- */
-$sql = "SELECT a.rowid, a.account_number, a.label, a.fk_pcg_version";
-$sql .= " , s.rowid, s.pcg_version";
-$sql .= " FROM " . MAIN_DB_PREFIX . "accountingaccount as a, " . MAIN_DB_PREFIX . "accounting_system as s";
-$sql .= " WHERE a.fk_pcg_version = s.pcg_version AND s.rowid=" . $conf->global->CHARTOFACCOUNTS;
-$sql .= " AND a.active = '1'";
-$sql .= " ORDER BY a.account_number ASC";
-dol_syslog("Accountancy Expert :: Card Supplier :: Fetch sql=" . $sql, LOG_DEBUG);
-
-$cgs = array ();
-$cgn = array ();
-
-$result = $db->query($sql);
-
-if ($result) {
-	$num = $db->num_rows($result);
-	$i = 0;
-	
-	while ( $i < $num ) {
-		$row = $db->fetch_row($result);
-		$cgs[$row[0]] = $row[1] . ' ' . $row[2];
-		$i ++;
-	}
-}
-
-/*
- * Creation
- *
+ * Create
  */
 $form = new Form($db);
 $facturefournisseur_static = new FactureFournisseur($db);
+$formventilation = new FormVentilation($db);
 
 if ($_GET["id"]) {
 	$sql = "SELECT f.ref as facnumber, f.rowid as facid, l.fk_product, l.description, l.rowid, l.fk_code_ventilation, ";
 	$sql .= " p.rowid as product_id, p.ref as product_ref, p.label as product_label";
+	$sql .= ", aa.account_number, aa.label";
 	$sql .= " FROM " . MAIN_DB_PREFIX . "facture_fourn_det as l";
 	$sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "product as p ON p.rowid = l.fk_product";
-	$sql .= " , " . MAIN_DB_PREFIX . "facture_fourn as f";
-	$sql .= " WHERE f.rowid = l.fk_facture_fourn AND f.fk_statut > 0 AND l.rowid = " . $_GET["id"];
+	$sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "accountingaccount as aa ON l.fk_code_ventilation = aa.rowid";
+	$sql .= " INNER JOIN " . MAIN_DB_PREFIX . "facture_fourn as f ON f.rowid = l.fk_facture_fourn ";
+	$sql .= " WHERE f.fk_statut > 0 AND l.rowid = " . $id;
+	if (! empty($conf->multicompany->enabled)) {
+		$sql .= " AND f.entity = '" . $conf->entity . "'";
+	}
 	
 	$result = $db->query($sql);
 	if ($result) {
@@ -121,16 +107,15 @@ if ($_GET["id"]) {
 		if ($num_lignes) {
 			$objp = $db->fetch_object($result);
 			
-			print '<form action="fiche.php?id=' . $_GET["id"] . '" method="post">' . "\n";
+			print '<form action="' . $_SERVER["PHP_SELF"] . '?id=' . $id . '" method="post">' . "\n";
 			print '<input type="hidden" name="token" value="' . $_SESSION['newtoken'] . '">';
 			print '<input type="hidden" name="action" value="ventil">';
 			
-			print_fiche_titre("Ventilation");
+			print_fiche_titre($langs->trans("Ventilation"));
 			
 			print '<table class="border" width="100%" cellspacing="0" cellpadding="4">';
 			
 			// ref invoice
-			
 			print '<tr><td>' . $langs->trans("BillsSuppliers") . '</td>';
 			$facturefournisseur_static->ref = $objp->facnumber;
 			$facturefournisseur_static->id = $objp->facid;
@@ -142,9 +127,9 @@ if ($_GET["id"]) {
 			print '<tr><td width="20%">' . $langs->trans("ProductLabel") . '</td>';
 			print '<td>' . dol_trunc($objp->product_label, 24) . '</td>';
 			print '<tr><td width="20%">' . $langs->trans("Account") . '</td><td>';
-			print $cgs[$objp->fk_code_ventilation];
+			print $objp->account_number . '-' . $objp->label;
 			print '<tr><td width="20%">' . $langs->trans("NewAccount") . '</td><td>';
-			print $form->selectarray("codeventil", $cgs, $objp->fk_code_ventilation);
+			print $formventilation->select_account($objp->fk_code_ventilation, 'codeventil', 1);
 			print '</td></tr>';
 			print '<tr><td>&nbsp;</td><td><input type="submit" class="button" value="' . $langs->trans("Update") . '"></td></tr>';
 			
@@ -160,6 +145,5 @@ if ($_GET["id"]) {
 	print "Error ID incorrect";
 }
 
-$db->close();
 llxFooter();
-?>
+$db->close();

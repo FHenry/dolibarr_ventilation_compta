@@ -1,10 +1,11 @@
 <?php
 /* Copyright (C) 2007-2010	Laurent Destailleur	<eldy@users.sourceforge.net>
- * Copyright (C) 2007-2010	Jean Heimburger		  <jean@tiaris.info>
- * Copyright (C) 2011		    Juanjo Menent		    <jmenent@2byte.es>
- * Copyright (C) 2012		    Regis Houssin		    <regis@dolibarr.fr>
- * Copyright (C) 2013-2014  Alexandre Spangaro  <alexandre.spangaro@gmail.com> 
- * Copyright (C) 2013-2014  Olivier Geffroy     <jeff@jeffinfo.com>
+ * Copyright (C) 2007-2010	Jean Heimburger		<jean@tiaris.info>
+ * Copyright (C) 2011		Juanjo Menent		<jmenent@2byte.es>
+ * Copyright (C) 2012		Regis Houssin		<regis@dolibarr.fr>
+ * Copyright (C) 2013-2014  Alexandre Spangaro	<alexandre.spangaro@gmail.com>
+ * Copyright (C) 2013-2014  Olivier Geffroy		<jeff@jeffinfo.com>
+ * Copyright (C) 2013-2014  Florian Henry	    <florian.henry@open-concept.pro>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,9 +22,9 @@
  */
 
 /**
- * \file accountingex/journal/purchasesjournal.php
- * \ingroup Accounting Expert
- * \brief Page with purchases journal
+ * \file		accountingex/journal/purchasesjournal.php
+ * \ingroup	Accounting Expert
+ * \brief		Page with purchases journal
  */
 
 // Dolibarr environment
@@ -66,13 +67,9 @@ if ($user->societe_id > 0)
 	accessforbidden();
 if (! $user->rights->accountingex->access)
 	accessforbidden();
-	
-	/*
- * Actions
- */
-	
-// None
-	
+
+$action = GETPOST('action');
+
 /*
  * View
  */
@@ -99,7 +96,7 @@ $p = explode(":", $conf->global->MAIN_INFO_SOCIETE_COUNTRY);
 $idpays = $p[0];
 
 $sql = "SELECT f.rowid, f.ref, f.type, f.datef as df, f.libelle,";
-$sql .= " fd.rowid as fdid, fd.total_ttc, fd.tva_tx, fd.total_ht, fd.tva as total_tva, fd.product_type,";
+$sql .= " fd.rowid as fdid, fd.description, fd.total_ttc, fd.tva_tx, fd.total_ht, fd.tva as total_tva, fd.product_type,";
 $sql .= " s.rowid as socid, s.nom as name, s.code_compta_fournisseur, s.fournisseur,";
 $sql .= " s.code_compta_fournisseur, p.accountancy_code_buy , ct.accountancy_code_buy as account_tva, aa.rowid as fk_compte, aa.account_number as compte, aa.label as label_compte";
 $sql .= ' ,pextra.pr_cd_analytics';
@@ -114,8 +111,10 @@ $sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "accountingaccount aa ON aa.rowid = fd.
 $sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "product_extrafields pextra ON pextra.fk_object = p.rowid";
 $sql .= " JOIN " . MAIN_DB_PREFIX . "facture_fourn f ON f.rowid = fd.fk_facture_fourn";
 $sql .= " JOIN " . MAIN_DB_PREFIX . "societe s ON s.rowid = f.fk_soc";
-$sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "projet proj ON proj.rowid = f.fk_projet";
-$sql .= " WHERE f.fk_statut > 0";
+$sql .= " WHERE f.fk_statut > 0 ";
+if (! empty($conf->multicompany->enabled)) {
+	$sql .= " AND f.entity = " . $conf->entity;
+}
 if (! empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS))
 	$sql .= " AND f.type IN (0,1,2)";
 else
@@ -124,6 +123,7 @@ if ($date_start && $date_end)
 	$sql .= " AND f.datef >= '" . $db->idate($date_start) . "' AND f.datef <= '" . $db->idate($date_end) . "'";
 $sql .= " ORDER BY f.datef";
 
+dol_syslog('accountingex/journal/purchasesjournal.php:: $sql=' . $sql);
 $result = $db->query($sql);
 if ($result) {
 	$num = $db->num_rows($result);
@@ -155,6 +155,7 @@ if ($result) {
 		$tabfac[$obj->rowid]["ref"] = $obj->ref;
 		$tabfac[$obj->rowid]["ref_supplier"] = $obj->ref_supplier;
 		$tabfac[$obj->rowid]["type"] = $obj->type;
+		$tabfac[$obj->rowid]["description"] = $obj->description;
 		$tabfac[$obj->rowid]["fk_facturefourndet"] = $obj->fdid;
 		$tabfac[$obj->rowid]["projet_id"] = $obj->projet_id;
 		$tabfac[$obj->rowid]["projet_ref"] = $obj->projet_ref;
@@ -191,9 +192,12 @@ if ($result) {
 } else {
 	dol_print_error($db);
 }
-// write bookkeeping
-if (GETPOST('action') == 'writeBookKeeping') {
-	
+
+/*
+ * Actions
+*/
+// Bookkeeping Write
+if ($action == 'writebookkeeping') {
 	$now = dol_now();
 	
 	foreach ( $tabfac as $key => $val ) {
@@ -219,7 +223,7 @@ if (GETPOST('action') == 'writeBookKeeping') {
 			$bookkeeping->create();
 		}
 		
-		// product
+		// Product / Service
 		foreach ( $tabht[$key] as $k => $mt ) {
 			if ($mt) {
 				// get compte id and label
@@ -233,7 +237,7 @@ if (GETPOST('action') == 'writeBookKeeping') {
 					$bookkeeping->fk_doc = $key;
 					$bookkeeping->fk_docdet = $val["fk_facturefourndet"];
 					$bookkeeping->code_tiers = '';
-					$bookkeeping->label_compte = $compte->label;
+					$bookkeeping->label_compte = dol_trunc($val["description"], 128);
 					$bookkeeping->numero_compte = $k;
 					$bookkeeping->montant = $mt;
 					$bookkeeping->sens = ($mt < 0) ? 'D' : 'C';
@@ -245,7 +249,8 @@ if (GETPOST('action') == 'writeBookKeeping') {
 				}
 			}
 		}
-		// vat
+		
+		// VAT
 		// var_dump($tabtva);
 		foreach ( $tabtva[$key] as $k => $mt ) {
 			if ($mt) {
@@ -259,7 +264,7 @@ if (GETPOST('action') == 'writeBookKeeping') {
 				$bookkeeping->fk_doc = $key;
 				$bookkeeping->fk_docdet = $val["fk_facturefourndet"];
 				$bookkeeping->code_tiers = '';
-				$bookkeeping->label_compte = 'TVA';
+				$bookkeeping->label_compte = $langs->trans("VAT");
 				$bookkeeping->numero_compte = $k;
 				$bookkeeping->montant = $mt;
 				$bookkeeping->sens = ($mt < 0) ? 'D' : 'C';
@@ -275,7 +280,7 @@ if (GETPOST('action') == 'writeBookKeeping') {
 
 // export csv
 
-if (GETPOST('action') == 'export_csv') {
+if ($action == 'export_csv') {
 	$sep = $conf->global->ACCOUNTINGEX_SEPARATORCSV;
 	
 	header('Content-Type: text/csv');
@@ -288,7 +293,7 @@ if (GETPOST('action') == 'export_csv') {
 		foreach ( $tabfac as $key => $val ) {
 			$date = dol_print_date($db->jdate($val["date"]), '%d%m%Y');
 			
-			// product
+			// Product / Service
 			foreach ( $tabht[$key] as $k => $mt ) {
 				$companystatic->id = $tabcompany[$key]['id'];
 				$companystatic->name = $tabcompany[$key]['name'];
@@ -301,13 +306,13 @@ if (GETPOST('action') == 'export_csv') {
 					print $sep;
 					print ($mt < 0 ? 'C' : 'D') . $sep;
 					print ($mt <= 0 ? price(- $mt) : $mt) . $sep;
-					print $langs->trans("Products") . $sep;
+					print dol_trunc($val["description"], 32) . $sep;
 					print $val["ref"];
 					print "\n";
 				}
 			}
 			
-			// vat
+			// VAT
 			// var_dump($tabtva);
 			foreach ( $tabtva[$key] as $k => $mt ) {
 				if ($mt) {
@@ -325,6 +330,7 @@ if (GETPOST('action') == 'export_csv') {
 			print $date . $sep;
 			print $conf->global->ACCOUNTINGEX_PURCHASE_JOURNAL . $sep;
 			print length_accountg($conf->global->COMPTA_ACCOUNT_SUPPLIER) . $sep;
+			
 			foreach ( $tabttc[$key] as $k => $mt ) {
 				print length_accounta(html_entity_decode($k)) . $sep;
 				print ($mt < 0 ? 'D' : 'C') . $sep;
@@ -334,7 +340,8 @@ if (GETPOST('action') == 'export_csv') {
 			}
 			print "\n";
 		}
-	} else {
+	} else 	// Modèle Export Classique
+	{
 		foreach ( $tabfac as $key => $val ) {
 			$date = dol_print_date($db->jdate($val["date"]), 'day');
 			
@@ -342,7 +349,7 @@ if (GETPOST('action') == 'export_csv') {
 			$companystatic->name = $tabcompany[$key]['name'];
 			$companystatic->client = $tabcompany[$key]['code_client'];
 			
-			// product
+			// Product / Service
 			foreach ( $tabht[$key] as $k => $mt ) {
 				if ($mt) {
 					
@@ -358,7 +365,7 @@ if (GETPOST('action') == 'export_csv') {
 					print "\n";
 				}
 			}
-			// vat
+			// VAT
 			// var_dump($tabtva);
 			foreach ( $tabtva[$key] as $k => $mt ) {
 				if ($mt) {
@@ -376,6 +383,7 @@ if (GETPOST('action') == 'export_csv') {
 				}
 			}
 			
+			// Third party
 			print '"0029"' . $sep;
 			print '"' . $val['compta_ana'] . '"' . $sep;
 			print '"009"' . $sep;
@@ -395,9 +403,7 @@ if (GETPOST('action') == 'export_csv') {
 			print "\n";
 		}
 	}
-} 
-
-else {
+} else {
 	
 	llxHeader('', '', '');
 	
@@ -420,7 +426,7 @@ else {
 	
 	print '<input type="button" class="button" style="float: right;" value="Export CSV" onclick="launch_export();" />';
 	
-	print '<input type="button" class="button" value="' . $langs->trans("WriteBookKeeping") . '" onclick="writeBookKeeping();" />';
+	print '<input type="button" class="button" value="' . $langs->trans("WriteBookKeeping") . '" onclick="writebookkeeping();" />';
 	
 	print '
 	<script type="text/javascript">
@@ -429,8 +435,8 @@ else {
 			$("div.fiche div.tabBar form input[type=\"submit\"]").click();
 		    $("div.fiche div.tabBar form input[name=\"action\"]").val("");
 		}
-		function writeBookKeeping() {
-		    $("div.fiche div.tabBar form input[name=\"action\"]").val("writeBookKeeping");
+		function writebookkeeping() {
+		    $("div.fiche div.tabBar form input[name=\"action\"]").val("writebookkeeping");
 			$("div.fiche div.tabBar form input[type=\"submit\"]").click();
 		    $("div.fiche div.tabBar form input[name=\"action\"]").val("");
 		}
@@ -463,17 +469,19 @@ else {
 		$invoicestatic->id = $key;
 		$invoicestatic->ref = $val["ref"];
 		$invoicestatic->type = $val["type"];
+		$invoicestatic->description = html_entity_decode(dol_trunc($val["description"], 32));
 		
 		$date = dol_print_date($db->jdate($val["date"]), 'day');
 		
-		// product
+		// Product / Service
 		foreach ( $tabht[$key] as $k => $mt ) {
 			if ($mt) {
 				print "<tr " . $bc[$var] . " >";
 				// print "<td>".$conf->global->COMPTA_JOURNAL_BUY."</td>";
 				print "<td>" . $date . "</td>";
 				print "<td>" . $invoicestatic->getNomUrl(1) . "</td>";
-				print "<td>" . length_accountg($k) . "</td><td>" . $langs->trans("Products") . "</td>";
+				print "<td>" . length_accountg($k) . "</td>";
+				print "<td>" . $invoicestatic->description . "</td>";
 				print '<td align="right">' . ($mt >= 0 ? price($mt) : '') . "</td>";
 				print '<td align="right">' . ($mt < 0 ? price(- $mt) : '') . "</td>";
 				print '<td align="right">' . $val['projet_ref'] . '</td>';
@@ -481,7 +489,7 @@ else {
 				print "</tr>";
 			}
 		}
-		// vat
+		// VAT
 		// var_dump($tabtva);
 		foreach ( $tabtva[$key] as $k => $mt ) {
 			if ($mt) {
@@ -498,7 +506,8 @@ else {
 			}
 		}
 		print "<tr " . $bc[$var] . ">";
-		// third party
+		
+		// Third party
 		// print "<td>".$conf->global->COMPTA_JOURNAL_BUY."</td>";
 		print "<td>" . $date . "</td>";
 		print "<td>" . $invoicestatic->getNomUrl(1) . "</td>";
@@ -527,4 +536,3 @@ else {
 	llxFooter();
 }
 $db->close();
-?>

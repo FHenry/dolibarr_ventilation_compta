@@ -1,9 +1,10 @@
 <?php
-/* Copyright (C) 2002-2005 Rodolphe Quiedeville <rodolphe@quiedeville.org>
- * Copyright (C) 2005      Simon TOSSER         <simon@kornog-computing.com>
- * Copyright (C) 2013-2014 Olivier Geffroy      <jeff@jeffinfo.com>
- * Copyright (C) 2013-2014 Alexandre Spangaro   <alexandre.spangaro@gmail.com>
- * Copyright (C) 2014      Ari Elbaz (elarifr)  <github@accedinfo.com>  
+/* Copyright (C) 2002-2005 Rodolphe Quiedeville	<rodolphe@quiedeville.org>
+ * Copyright (C) 2005      Simon TOSSER			<simon@kornog-computing.com>
+ * Copyright (C) 2013-2014 Olivier Geffroy		<jeff@jeffinfo.com>
+ * Copyright (C) 2013-2014 Alexandre Spangaro	<alexandre.spangaro@gmail.com>
+ * Copyright (C) 2014      Ari Elbaz (elarifr)	<github@accedinfo.com>  
+ * Copyright (C) 2013-2014 Florian Henry		<florian.henry@open-concept.pro>a
  *   
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +18,6 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
- *
  */
 
 /**
@@ -55,19 +55,6 @@ if ($user->societe_id > 0)
 	accessforbidden();
 if (! $user->rights->accountingex->admin)
 	accessforbidden();
-	
-	// Filter
-if (empty($_REQUEST['typeid'])) {
-	$newfiltre = str_replace('filtre=', '', $filtre);
-	$filterarray = explode('-', $newfiltre);
-	foreach ( $filterarray as $val ) {
-		$part = explode(':', $val);
-		if ($part[0] == 'aa.label')
-			$typeid = $part[1];
-	}
-} else {
-	$typeid = $_REQUEST['typeid'];
-}
 
 $formventilation = new FormVentilation($db);
 
@@ -108,7 +95,15 @@ llxHeader('', $langs->trans("SuppliersVentilation") . ' - ' . $langs->trans("Dis
 $page = $_GET["page"];
 if ($page < 0)
 	$page = 0;
-$limit = $conf->global->ACCOUNTINGEX_LIMIT_LIST_VENTILATION;
+
+if (! empty($conf->global->ACCOUNTINGEX_LIMIT_LIST_VENTILATION)) {
+	$limit = $conf->global->ACCOUNTINGEX_LIMIT_LIST_VENTILATION;
+} else if ($conf->global->ACCOUNTINGEX_LIMIT_LIST_VENTILATION <= 0) {
+	$limit = $conf->liste_limit;
+} else {
+	$limit = $conf->liste_limit;
+}
+
 $offset = $limit * $page;
 
 $sql = "SELECT f.ref as facnumber, f.rowid as facid, l.fk_product, l.description, l.total_ht , l.qty, l.rowid, l.tva_tx, aa.label, aa.account_number, ";
@@ -134,10 +129,10 @@ if (strlen(trim($_GET["search_desc"]))) {
 if (strlen(trim($_GET["search_account"]))) {
 	$sql .= " AND aa.account_number like '%" . $_GET["search_account"] . "%'";
 }
-
-if ($typeid) {
-	$sql .= " AND aa.label=" . $typeid;
+if (! empty($conf->multicompany->enabled)) {
+	$sql .= " AND f.entity = '" . $conf->entity . "'";
 }
+
 $sql .= " ORDER BY l.rowid";
 if ($conf->global->ACCOUNTINGEX_LIST_SORT_VENTILATION_DONE > 0) {
 	$sql .= " DESC ";
@@ -151,6 +146,7 @@ if ($result) {
 	$num_lignes = $db->num_rows($result);
 	$i = 0;
 	
+	// TODO : print_barre_liste always use $conf->liste_limit and do not care about custom limit in list...
 	print_barre_liste($langs->trans("InvoiceLinesDone"), $page, "lignes.php", "", $sortfield, $sortorder, '', $num_lignes);
 	
 	print '<td align="left"><br><b>' . $langs->trans("DescVentilDoneSupplier") . '</b></br></td>';
@@ -160,7 +156,7 @@ if ($result) {
 	
 	print '<div class="inline-block divButAction"><input type="submit" class="butAction" value="' . $langs->trans("ChangeAccount") . '" /></div>';
 	
-	print $formventilation->select_account_parent(GETPOST('account_parent'), 'account_parent', 1);
+	print $formventilation->select_account(GETPOST('account_parent'), 'account_parent', 1);
 	
 	print '<tr class="liste_titre"><td>' . $langs->trans("Invoice") . '</td>';
 	print '<td>' . $langs->trans("Ref") . '</td>';
@@ -233,6 +229,4 @@ if ($result) {
 print "</table></form>";
 
 $db->close();
-
 llxFooter();
-?>

@@ -1,11 +1,11 @@
 <?php
 /* Copyright (C) 2007-2010	Laurent Destailleur	<eldy@users.sourceforge.net>
- * Copyright (C) 2007-2010	Jean Heimburger		  <jean@tiaris.info>
- * Copyright (C) 2011		    Juanjo Menent		    <jmenent@2byte.es>
- * Copyright (C) 2012		    Regis Houssin		    <regis@dolibarr.fr>
- * Copyright (C) 2013		    Christophe Battarel	<christophe.battarel@altairis.fr>
+ * Copyright (C) 2007-2010	Jean Heimburger		<jean@tiaris.info>
+ * Copyright (C) 2011		Juanjo Menent		<jmenent@2byte.es>
+ * Copyright (C) 2012		Regis Houssin		<regis@dolibarr.fr>
+ * Copyright (C) 2013		Christophe Battarel	<christophe.battarel@altairis.fr>
  * Copyright (C) 2013-2014  Alexandre Spangaro	<alexandre.spangaro@gmail.com>
- * Copyright (C) 2013       Florian Henry	      <florian.henry@open-concept.pro>
+ * Copyright (C) 2013-2014  Florian Henry	    <florian.henry@open-concept.pro>
  * Copyright (C) 2013-2014  Olivier Geffroy     <jeff@jeffinfo.com>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -73,12 +73,9 @@ if ($user->societe_id > 0)
 	accessforbidden();
 if (! $user->rights->accountingex->access)
 	accessforbidden();
-	/*
- * Actions
- */
-	
-// None
-	
+
+$action = GETPOST('action');
+
 /*
  * View
  */
@@ -109,8 +106,13 @@ $sql .= " FROM " . MAIN_DB_PREFIX . "bank b";
 $sql .= " JOIN " . MAIN_DB_PREFIX . "bank_account ba on b.fk_account=ba.rowid";
 $sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "bank_url bu1 ON bu1.fk_bank = b.rowid AND bu1.type='company'";
 $sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "societe soc on bu1.url_id=soc.rowid";
-$sql .= " WHERE ba.entity = " . $conf->entity;
-$sql .= " AND ba.courant = 2"; // Code opération type caisse
+
+// Code opération type caisse
+$sql .= " WHERE ba.courant = 2";
+if (! empty($conf->multicompany->enabled)) {
+	$sql .= " AND ba.entity = " . $conf->entity;
+}
+
 if ($date_start && $date_end)
 	$sql .= " AND b.dateo >= '" . $db->idate($date_start) . "' AND b.dateo <= '" . $db->idate($date_end) . "'";
 $sql .= " ORDER BY b.datev";
@@ -122,7 +124,7 @@ $societestatic = new Societe($db);
 $chargestatic = new ChargeSociales($db);
 $paymentvatstatic = new TVA($db);
 
-dol_syslog("cashjournal::create sql=" . $sql, LOG_DEBUG);
+dol_syslog("accountingex/journal/cashjournal.php:: sql=" . $sql, LOG_DEBUG);
 $result = $db->query($sql);
 if ($result) {
 	
@@ -203,7 +205,7 @@ if ($result) {
 				$sqlmid .= " INNER JOIN " . MAIN_DB_PREFIX . "paiementcharge as paycharg ON  paycharg.fk_charge=chgsoc.rowid";
 				$sqlmid .= " INNER JOIN " . MAIN_DB_PREFIX . "bank_url as bkurl ON  bkurl.url_id=paycharg.rowid";
 				$sqlmid .= " WHERE bkurl.fk_bank=" . $obj->rowid;
-				dol_syslog("cashjournal::  sqlmid=" . $sqlmid, LOG_DEBUG);
+				dol_syslog("accountingex/journal/cashjournal.php:: sqlmid=" . $sqlmid, LOG_DEBUG);
 				$resultmid = $db->query($sqlmid);
 				if ($resultmid) {
 					$objmid = $db->fetch_object($resultmid);
@@ -232,8 +234,13 @@ if ($result) {
 } else {
 	dol_print_error($db);
 }
+
+/*
+ * Actions
+*/
+
 // write bookkeeping
-if (GETPOST('action') == 'writeBookKeeping') {
+if ($action == 'writeBookKeeping') {
 	$error = 0;
 	foreach ( $tabpay as $key => $val ) {
 		// cash
@@ -260,7 +267,7 @@ if (GETPOST('action') == 'writeBookKeeping') {
 				$sqlmid .= " INNER JOIN " . MAIN_DB_PREFIX . "paiement_facture as payfac ON  payfac.fk_facture=fac.rowid";
 				$sqlmid .= " INNER JOIN " . MAIN_DB_PREFIX . "paiement as pay ON  payfac.fk_paiement=pay.rowid";
 				$sqlmid .= " WHERE pay.fk_bank=" . $key;
-				dol_syslog("cashjournal::  sqlmid=" . $sqlmid, LOG_DEBUG);
+				dol_syslog("accountingex/journal/cashjournal.php:: sqlmid=" . $sqlmid, LOG_DEBUG);
 				$resultmid = $db->query($sqlmid);
 				if ($resultmid) {
 					$objmid = $db->fetch_object($resultmid);
@@ -273,7 +280,7 @@ if (GETPOST('action') == 'writeBookKeeping') {
 				$sqlmid .= " INNER JOIN " . MAIN_DB_PREFIX . "paiementfourn_facturefourn as payfacf ON  payfacf.fk_facturefourn=facf.rowid";
 				$sqlmid .= " INNER JOIN " . MAIN_DB_PREFIX . "paiementfourn as payf ON  payfacf.fk_paiementfourn=payf.rowid";
 				$sqlmid .= " WHERE payf.fk_bank=" . $key;
-				dol_syslog("cashjournal::  sqlmid=" . $sqlmid, LOG_DEBUG);
+				dol_syslog("accountingex/journal/cashjournal.php:: sqlmid=" . $sqlmid, LOG_DEBUG);
 				$resultmid = $db->query($sqlmid);
 				if ($resultmid) {
 					$objmid = $db->fetch_object($resultmid);
@@ -313,7 +320,7 @@ if (GETPOST('action') == 'writeBookKeeping') {
 				$sqlmid .= " INNER JOIN " . MAIN_DB_PREFIX . "paiement_facture as payfac ON  payfac.fk_facture=fac.rowid";
 				$sqlmid .= " INNER JOIN " . MAIN_DB_PREFIX . "paiement as pay ON  payfac.fk_paiement=pay.rowid";
 				$sqlmid .= " WHERE pay.fk_bank=" . $key;
-				dol_syslog("cashjournal::  sqlmid=" . $sqlmid, LOG_DEBUG);
+				dol_syslog("accountingex/journal/cashjournal.php:: sqlmid=" . $sqlmid, LOG_DEBUG);
 				$resultmid = $db->query($sqlmid);
 				if ($resultmid) {
 					$objmid = $db->fetch_object($resultmid);
@@ -328,7 +335,7 @@ if (GETPOST('action') == 'writeBookKeeping') {
 				$sqlmid .= " INNER JOIN " . MAIN_DB_PREFIX . "paiementfourn_facturefourn as payfacf ON  payfacf.fk_facturefourn=facf.rowid";
 				$sqlmid .= " INNER JOIN " . MAIN_DB_PREFIX . "paiementfourn as payf ON  payfacf.fk_paiementfourn=payf.rowid";
 				$sqlmid .= " WHERE payf.fk_bank=" . $key;
-				dol_syslog("cashjournal::  sqlmid=" . $sqlmid, LOG_DEBUG);
+				dol_syslog("accountingex/journal/cashjournal.php:: sqlmid=" . $sqlmid, LOG_DEBUG);
 				$resultmid = $db->query($sqlmid);
 				if ($resultmid) {
 					$objmid = $db->fetch_object($resultmid);
@@ -343,7 +350,7 @@ if (GETPOST('action') == 'writeBookKeeping') {
 				$sqlmid .= " INNER JOIN " . MAIN_DB_PREFIX . "paiement_facture as payfac ON  payfac.fk_facture=fac.rowid";
 				$sqlmid .= " INNER JOIN " . MAIN_DB_PREFIX . "paiement as pay ON  payfac.fk_paiement=pay.rowid";
 				$sqlmid .= " WHERE pay.fk_bank=" . $key;
-				dol_syslog("cashjournal::  sqlmid=" . $sqlmid, LOG_DEBUG);
+				dol_syslog("accountingex/journal/cashjournal.php:: sqlmid=" . $sqlmid, LOG_DEBUG);
 				$resultmid = $db->query($sqlmid);
 				if ($resultmid) {
 					$objmid = $db->fetch_object($resultmid);
@@ -370,18 +377,18 @@ if (GETPOST('action') == 'writeBookKeeping') {
 	}
 }
 // export csv
-if (GETPOST('action') == 'export_csv') {
+if ($action == 'export_csv') {
 	$sep = $conf->global->ACCOUNTINGEX_SEPARATORCSV;
 	
 	header('Content-Type: text/csv');
 	header('Content-Disposition:attachment;filename=journal_caisse.csv');
 	
-	if ($conf->global->ACCOUNTINGEX_MODELCSV == 1) 	// Modèle Cegid Expert
+	if ($conf->global->ACCOUNTINGEX_MODELCSV == 1) 	// Modèle Export Cegid Expert
 	{
 		foreach ( $tabpay as $key => $val ) {
 			$date = dol_print_date($db->jdate($val["date"]), '%d%m%Y');
 			
-			// Caisse
+			// Cash
 			print $date . $sep;
 			print $conf->global->ACCOUNTINGEX_CASH_JOURNAL . $sep;
 			
@@ -395,7 +402,7 @@ if (GETPOST('action') == 'export_csv') {
 			print $val["ref"] . $sep;
 			print "\n";
 			
-			// third party
+			// Third party
 			foreach ( $tabtp[$key] as $k => $mt ) {
 				if ($mt) {
 					print $date . $sep;
@@ -414,24 +421,31 @@ if (GETPOST('action') == 'export_csv') {
 				}
 			}
 		}
-	} else {
+	} else 	// Modèle Export Classique
+	{
 		foreach ( $tabpay as $key => $val ) {
 			$date = dol_print_date($db->jdate($val["date"]), 'day');
 			print '"' . $date . '"' . $sep;
 			print '"' . $val["ref"] . '"' . $sep;
 			
-			// cash
+			// Cash
 			foreach ( $tabbq[$key] as $k => $mt ) {
-				print '"' . html_entity_decode($k) . '"' . $sep . '"' . $langs->trans("Cash") . '"' . $sep . '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep . '"' . ($mt < 0 ? price(- $mt) : '') . '"';
+				print '"' . length_accountg(html_entity_decode($k)) . '"' . $sep;
+				print '"' . $langs->trans("Cash") . '"' . $sep;
+				print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
+				print '"' . ($mt < 0 ? price(- $mt) : '') . '"';
 			}
 			print "\n";
 			
-			// third party
+			// Third party
 			foreach ( $tabtp[$key] as $k => $mt ) {
 				if ($mt) {
 					print '"' . $date . '"' . $sep;
 					print '"' . $val["ref"] . '"' . $sep;
-					print '"' . html_entity_decode($k) . '"' . $sep . '"' . $langs->trans("ThirdParty") . '"' . $sep . '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep . '"' . ($mt >= 0 ? price($mt) : '') . '"';
+					print '"' . length_accounta(html_entity_decode($k)) . '"' . $sep;
+					print '"' . $langs->trans("ThirdParty") . '"' . $sep;
+					print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
+					print '"' . ($mt >= 0 ? price($mt) : '') . '"';
 					print "\n";
 				}
 			}
@@ -528,4 +542,3 @@ if (GETPOST('action') == 'export_csv') {
 	llxFooter();
 }
 $db->close();
-?>

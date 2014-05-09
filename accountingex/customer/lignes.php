@@ -1,9 +1,8 @@
 <?php
-/* Copyright (C) 2002-2005 Rodolphe Quiedeville <rodolphe@quiedeville.org>
- * Copyright (C) 2006      Laurent Destailleur  <eldy@users.sourceforge.net>
- * Copyright (C) 2013-2014 Olivier Geffroy      <jeff@jeffinfo.com>
- * Copyright (C) 2013-2014 Alexandre Spangaro   <alexandre.spangaro@gmail.com>  
- * Copyright (C) 2014      Ari Elbaz (elarifr)  <github@accedinfo.com>   
+/* Copyright (C) 2013-2014 Olivier Geffroy		<jeff@jeffinfo.com>
+ * Copyright (C) 2013-2014 Alexandre Spangaro	<alexandre.spangaro@gmail.com>
+ * Copyright (C) 2014      Ari Elbaz (elarifr)	<github@accedinfo.com>
+ * Copyright (C) 2014      Florian Henry		<florian.henry@open-concept.pro>   
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,9 +20,9 @@
  */
 
 /**
- * \file accountingex/customer/lignes.php
- * \ingroup Accounting Expert
- * \brief Page de detail des lignes de ventilation d'une facture client
+ * \file		accountingex/customer/lignes.php
+ * \ingroup	Accounting Expert
+ * \brief		Page de detail des lignes de ventilation d'une facture client
  */
 
 // Dolibarr environment
@@ -48,24 +47,13 @@ $langs->load("compta");
 $langs->load("main");
 $langs->load("accountingex@accountingex");
 
+$account_parent = GETPOST('account_parent');
+
 // Security check
 if ($user->societe_id > 0)
 	accessforbidden();
 if (! $user->rights->accountingex->admin)
 	accessforbidden();
-	
-	// Filter
-if (empty($_REQUEST['typeid'])) {
-	$newfiltre = str_replace('filtre=', '', $filtre);
-	$filterarray = explode('-', $newfiltre);
-	foreach ( $filterarray as $val ) {
-		$part = explode(':', $val);
-		if ($part[0] == 'c.intitule')
-			$typeid = $part[1];
-	}
-} else {
-	$typeid = $_REQUEST['typeid'];
-}
 
 $formventilation = new FormVentilation($db);
 
@@ -81,7 +69,7 @@ if (is_array($changeaccount) && count($changeaccount) > 0 && empty($is_search)) 
 	$db->begin();
 	
 	$sql1 = "UPDATE " . MAIN_DB_PREFIX . "facturedet as l";
-	$sql1 .= " SET l.fk_code_ventilation=" . GETPOST('account_parent');
+	$sql1 .= " SET l.fk_code_ventilation=" . $account_parent;
 	$sql1 .= ' WHERE l.rowid IN (' . implode(',', $changeaccount) . ')';
 	
 	dol_syslog('accountingex/customer/lignes.php::changeaccount sql= ' . $sql1);
@@ -102,13 +90,21 @@ if (is_array($changeaccount) && count($changeaccount) > 0 && empty($is_search)) 
 llxHeader('', $langs->trans("CustomersVentilation") . ' - ' . $langs->trans("Dispatched"));
 
 /*
-* Lignes de factures
-*
-*/
+ * Lignes de factures
+ *
+ */
 $page = GETPOST("page");
 if ($page < 0)
 	$page = 0;
-$limit = $conf->global->ACCOUNTINGEX_LIMIT_LIST_VENTILATION;
+
+if (! empty($conf->global->ACCOUNTINGEX_LIMIT_LIST_VENTILATION)) {
+	$limit = $conf->global->ACCOUNTINGEX_LIMIT_LIST_VENTILATION;
+} elseif ($conf->global->ACCOUNTINGEX_LIMIT_LIST_VENTILATION <= 0) {
+	$limit = $conf->liste_limit;
+} else {
+	$limit = $conf->liste_limit;
+}
+
 $offset = $limit * $page;
 
 $sql = "SELECT l.rowid , f.facnumber, f.rowid as facid, l.fk_product, l.description, l.total_ht, l.qty, l.tva_tx, l.fk_code_ventilation, aa.label, aa.account_number,";
@@ -134,8 +130,9 @@ if (strlen(trim(GETPOST("search_desc")))) {
 if (strlen(trim(GETPOST("search_account")))) {
 	$sql .= " AND aa.account_number like '%" . GETPOST("search_account") . "%'";
 }
-if ($typeid) {
-	$sql .= " AND c.intitule=" . $typeid;
+
+if (! empty($conf->multicompany->enabled)) {
+	$sql .= " AND f.entity = '" . $conf->entity . "'";
 }
 
 $sql .= " ORDER BY l.rowid";
@@ -144,22 +141,23 @@ if ($conf->global->ACCOUNTINGEX_LIST_SORT_VENTILATION_DONE > 0) {
 }
 $sql .= $db->plimit($limit + 1, $offset);
 
+dol_syslog("/accountingex/customer/linges.php sql=" . $sql, LOG_DEBUG);
 $result = $db->query($sql);
-
 if ($result) {
 	$num_lignes = $db->num_rows($result);
 	$i = 0;
 	
-	print_barre_liste($langs->trans("InvoiceLinesDone"), $page, "lignes.php", "", $sortfield, $sortorder, '', $num_lignes);
+	// TODO : print_barre_liste always use $conf->liste_limit and do not care about custom limit in list...
+	print_barre_liste($langs->trans("InvoiceLinesDone"), $page, $_SERVER["PHP_SELF"], "", $sortfield, $sortorder, '', $num_lignes);
 	
-	print '<td align="left"><br><b>' . $langs->trans("DescVentilDoneCustomer") . '</b></br></td>';
+	print '<td align="left"><br><b>' . $langs->trans("DescVentilDoneCustomer") . '</b></br><br></td>';
 	
-	print '<form method="POST" action="lignes.php">';
+	print '<form method="POST" action="' . $_SERVER["PHP_SELF"] . '">';
 	print '<table class="noborder" width="100%">';
 	
-	// print '<a class="butAction" href="' . $_SERVER ['PHP_SELF'] . '?action=changeaccount">' . $langs->trans ( "ChangeAccount" ) . '</a>';
-	print '<div class="inline-block divButAction"><input type="submit" class="butAction" value="' . $langs->trans("ChangeAccount") . '"/></div>';
-	print $formventilation->select_account_parent(GETPOST('account_parent'), 'account_parent', 1);
+	print '<div class="inline-block divButAction">' . $langs->trans("ChangeAccount") . '</div>';
+	print $formventilation->select_account($account_parent, 'account_parent', 1);
+	print '<div class="inline-block divButAction"><input type="submit" class="butAction" value="' . $langs->trans("Validate") . '"/></div>';
 	
 	print '<tr class="liste_titre"><td>' . $langs->trans("Invoice") . '</td>';
 	print '<td>' . $langs->trans("Ref") . '</td>';
@@ -188,8 +186,7 @@ if ($result) {
 	$product_static = new Product($db);
 	
 	$var = True;
-	while ( $i < min($num_lignes, $limit) ) {
-		$objp = $db->fetch_object($result);
+	while ( $objp = $db->fetch_object($result) ) {
 		$var = ! $var;
 		$codeCompta = $objp->account_number . ' ' . $objp->label;
 		
@@ -232,6 +229,4 @@ if ($result) {
 print "</table></form>";
 
 $db->close();
-
 llxFooter();
-?>
