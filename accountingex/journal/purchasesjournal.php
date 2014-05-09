@@ -43,7 +43,7 @@ dol_include_once("/core/lib/date.lib.php");
 dol_include_once("/accountingex/core/lib/account.lib.php");
 dol_include_once("/fourn/class/fournisseur.facture.class.php");
 dol_include_once("/fourn/class/fournisseur.class.php");
-dol_include_once ( "/societe/class/client.class.php" );
+dol_include_once("/societe/class/client.class.php");
 dol_include_once("/accountingex/class/bookkeeping.class.php");
 dol_include_once("/accountingex/class/accountingaccount.class.php");
 
@@ -131,14 +131,14 @@ if ($result) {
 	$cptfour = (! empty($conf->global->COMPTA_ACCOUNT_SUPPLIER)) ? $conf->global->COMPTA_ACCOUNT_SUPPLIER : $langs->trans("CodeNotDef");
 	$cpttva = (! empty($conf->global->COMPTA_VAT_ACCOUNT)) ? $conf->global->COMPTA_VAT_ACCOUNT : $langs->trans("CodeNotDef");
 	
-	$tabfac = array();
-	$tabht = array();
-	$tabtva = array();
-	$tabttc = array();
-	$tabcompany = array();
+	$tabfac = array ();
+	$tabht = array ();
+	$tabtva = array ();
+	$tabttc = array ();
+	$tabcompany = array ();
 	
 	$i = 0;
-	while ($i < $num) {
+	while ( $i < $num ) {
 		$obj = $db->fetch_object($result);
 		// contrôles
 		$compta_soc = (! empty($obj->code_compta_fournisseur)) ? $obj->code_compta_fournisseur : $cptfour;
@@ -180,10 +180,10 @@ if ($result) {
 		$tabttc[$obj->rowid][$compta_soc] += $obj->total_ttc;
 		$tabht[$obj->rowid][$compta_prod] += $obj->total_ht;
 		$tabtva[$obj->rowid][$compta_tva] += $obj->total_tva;
-		$tabcompany[$obj->rowid] = array(
-			'id' => $obj->socid,
-			'name' => $obj->name,
-			'code_fournisseur' => $obj->code_compta_fournisseur
+		$tabcompany[$obj->rowid] = array (
+				'id' => $obj->socid,
+				'name' => $obj->name,
+				'code_fournisseur' => $obj->code_compta_fournisseur 
 		);
 		
 		$i ++;
@@ -194,10 +194,10 @@ if ($result) {
 // write bookkeeping
 if (GETPOST('action') == 'writeBookKeeping') {
 	
-	$now=dol_now();
+	$now = dol_now();
 	
-	foreach ($tabfac as $key => $val) {
-		foreach ($tabttc[$key] as $k => $mt) {
+	foreach ( $tabfac as $key => $val ) {
+		foreach ( $tabttc[$key] as $k => $mt ) {
 			// get compte id and label
 			
 			$bookkeeping = new BookKeeping($db);
@@ -220,7 +220,7 @@ if (GETPOST('action') == 'writeBookKeeping') {
 		}
 		
 		// product
-		foreach ($tabht[$key] as $k => $mt) {
+		foreach ( $tabht[$key] as $k => $mt ) {
 			if ($mt) {
 				// get compte id and label
 				$compte = new AccountingAccount($db);
@@ -247,7 +247,7 @@ if (GETPOST('action') == 'writeBookKeeping') {
 		}
 		// vat
 		// var_dump($tabtva);
-		foreach ($tabtva[$key] as $k => $mt) {
+		foreach ( $tabtva[$key] as $k => $mt ) {
 			if ($mt) {
 				// get compte id and label
 				
@@ -281,15 +281,15 @@ if (GETPOST('action') == 'export_csv') {
 	header('Content-Type: text/csv');
 	header('Content-Disposition: attachment;filename=journal_achats.csv');
 	
-	$companystatic = new Client ( $db );
+	$companystatic = new Client($db);
 	
 	if ($conf->global->ACCOUNTINGEX_MODELCSV == 1) 	// Modèle Cegid Expert
 	{
-		foreach ($tabfac as $key => $val) {
+		foreach ( $tabfac as $key => $val ) {
 			$date = dol_print_date($db->jdate($val["date"]), '%d%m%Y');
 			
 			// product
-			foreach ($tabht[$key] as $k => $mt) {
+			foreach ( $tabht[$key] as $k => $mt ) {
 				$companystatic->id = $tabcompany[$key]['id'];
 				$companystatic->name = $tabcompany[$key]['name'];
 				$companystatic->client = $tabcompany[$key]['code_client'];
@@ -309,7 +309,7 @@ if (GETPOST('action') == 'export_csv') {
 			
 			// vat
 			// var_dump($tabtva);
-			foreach ($tabtva[$key] as $k => $mt) {
+			foreach ( $tabtva[$key] as $k => $mt ) {
 				if ($mt) {
 					print $date . $sep;
 					print $conf->global->ACCOUNTINGEX_PURCHASE_JOURNAL . $sep;
@@ -325,7 +325,7 @@ if (GETPOST('action') == 'export_csv') {
 			print $date . $sep;
 			print $conf->global->ACCOUNTINGEX_PURCHASE_JOURNAL . $sep;
 			print length_accountg($conf->global->COMPTA_ACCOUNT_SUPPLIER) . $sep;
-			foreach ($tabttc[$key] as $k => $mt) {
+			foreach ( $tabttc[$key] as $k => $mt ) {
 				print length_accounta(html_entity_decode($k)) . $sep;
 				print ($mt < 0 ? 'D' : 'C') . $sep;
 				print ($mt <= 0 ? price(- $mt) : $mt) . $sep;
@@ -335,7 +335,7 @@ if (GETPOST('action') == 'export_csv') {
 			print "\n";
 		}
 	} else {
-		foreach ($tabfac as $key => $val) {
+		foreach ( $tabfac as $key => $val ) {
 			$date = dol_print_date($db->jdate($val["date"]), 'day');
 			
 			$companystatic->id = $tabcompany[$key]['id'];
@@ -343,53 +343,53 @@ if (GETPOST('action') == 'export_csv') {
 			$companystatic->client = $tabcompany[$key]['code_client'];
 			
 			// product
-			foreach ($tabht[$key] as $k => $mt) {
+			foreach ( $tabht[$key] as $k => $mt ) {
 				if ($mt) {
 					
-					print '"0029"'.$sep;
-					print '"'.$val['compta_ana'].'"'.$sep;
-					print '"009"'.$sep;
+					print '"0029"' . $sep;
+					print '"' . $val['compta_ana'] . '"' . $sep;
+					print '"009"' . $sep;
 					print '"' . html_entity_decode($k) . '"' . $sep;
-					print '"' . utf8_decode($companystatic->name) . ' '.$val['ref_supplier'].'"'. $sep;
+					print '"' . utf8_decode($companystatic->name) . ' ' . $val['ref_supplier'] . '"' . $sep;
 					print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
 					print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
-					print '""'.$sep;
+					print '""' . $sep;
 					print '"' . $date . '"' . $sep;
 					print "\n";
 				}
 			}
 			// vat
 			// var_dump($tabtva);
-			foreach ($tabtva[$key] as $k => $mt) {
+			foreach ( $tabtva[$key] as $k => $mt ) {
 				if ($mt) {
 					
-					print '"0029"'.$sep;
-					print '"'.$val['compta_ana'].'"'.$sep;
-					print '"009"'.$sep;
+					print '"0029"' . $sep;
+					print '"' . $val['compta_ana'] . '"' . $sep;
+					print '"009"' . $sep;
 					print '"' . html_entity_decode($k) . '"' . $sep;
-					print '"' . utf8_decode($companystatic->name) . ' '.$val['ref_supplier'].'"'. $sep;
+					print '"' . utf8_decode($companystatic->name) . ' ' . $val['ref_supplier'] . '"' . $sep;
 					print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
 					print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
-					print '""'.$sep;
+					print '""' . $sep;
 					print '"' . $date . '"' . $sep;
 					print "\n";
 				}
 			}
 			
-			print '"0029"'.$sep;
-			print '"'.$val['compta_ana'].'"'.$sep;
-			print '"009"'.$sep;
-			foreach ($tabttc[$key] as $k => $mt) {
+			print '"0029"' . $sep;
+			print '"' . $val['compta_ana'] . '"' . $sep;
+			print '"009"' . $sep;
+			foreach ( $tabttc[$key] as $k => $mt ) {
 				print '"' . html_entity_decode($k) . '"' . $sep;
-				print '"' . utf8_decode($companystatic->name) . ' '.$val['ref_supplier'].'"'. $sep;
+				print '"' . utf8_decode($companystatic->name) . ' ' . $val['ref_supplier'] . '"' . $sep;
 				print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
 				print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
-				if ((substr($k,0,3)=='401') || (substr($k,0,3)=='419')) {
-					print '"029FFFF"'.$sep;
+				if ((substr($k, 0, 3) == '401') || (substr($k, 0, 3) == '419')) {
+					print '"029FFFF"' . $sep;
 				} else {
-					print '""'.$sep;
+					print '""' . $sep;
 				}
-
+				
 				print '"' . $date . '"' . $sep;
 			}
 			print "\n";
@@ -414,8 +414,8 @@ else {
 	else
 		$description .= $langs->trans("DepositsAreIncluded");
 	$period = $form->select_date($date_start, 'date_start', 0, 0, 0, '', 1, 0, 1) . ' - ' . $form->select_date($date_end, 'date_end', 0, 0, 0, '', 1, 0, 1);
-	report_header($nom, $nomlink, $period, $periodlink, $description, $builddate, $exportlink, array(
-		'action' => ''
+	report_header($nom, $nomlink, $period, $periodlink, $description, $builddate, $exportlink, array (
+			'action' => '' 
 	));
 	
 	print '<input type="button" class="button" style="float: right;" value="Export CSV" onclick="launch_export();" />';
@@ -459,7 +459,7 @@ else {
 	$invoicestatic = new FactureFournisseur($db);
 	$companystatic = new Fournisseur($db);
 	
-	foreach ($tabfac as $key => $val) {
+	foreach ( $tabfac as $key => $val ) {
 		$invoicestatic->id = $key;
 		$invoicestatic->ref = $val["ref"];
 		$invoicestatic->type = $val["type"];
@@ -467,7 +467,7 @@ else {
 		$date = dol_print_date($db->jdate($val["date"]), 'day');
 		
 		// product
-		foreach ($tabht[$key] as $k => $mt) {
+		foreach ( $tabht[$key] as $k => $mt ) {
 			if ($mt) {
 				print "<tr " . $bc[$var] . " >";
 				// print "<td>".$conf->global->COMPTA_JOURNAL_BUY."</td>";
@@ -483,7 +483,7 @@ else {
 		}
 		// vat
 		// var_dump($tabtva);
-		foreach ($tabtva[$key] as $k => $mt) {
+		foreach ( $tabtva[$key] as $k => $mt ) {
 			if ($mt) {
 				print "<tr " . $bc[$var] . " >";
 				// print "<td>".$conf->global->COMPTA_JOURNAL_BUY."</td>";
@@ -503,7 +503,7 @@ else {
 		print "<td>" . $date . "</td>";
 		print "<td>" . $invoicestatic->getNomUrl(1) . "</td>";
 		
-		foreach ($tabttc[$key] as $k => $mt) {
+		foreach ( $tabttc[$key] as $k => $mt ) {
 			$companystatic->id = $tabcompany[$key]['id'];
 			$companystatic->name = $tabcompany[$key]['name'];
 			
