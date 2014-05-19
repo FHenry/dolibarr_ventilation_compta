@@ -132,7 +132,7 @@ if (strlen(trim(GETPOST("search_account")))) {
 }
 
 if (! empty($conf->multicompany->enabled)) {
-	$sql .= " AND f.entity = '" . $conf->entity . "'";
+	//$sql .= " AND f.entity = '" . $conf->entity . "'";
 }
 
 $sql .= " ORDER BY l.rowid";

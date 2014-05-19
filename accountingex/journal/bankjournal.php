@@ -109,7 +109,7 @@ $sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "societe soc on bu1.url_id=soc.rowid";
 // Pour isoler la caisse des autres comptes
 $sql .= " WHERE ba.courant <> 2";
 if (! empty($conf->multicompany->enabled)) {
-	$sql .= " AND ba.entity = " . $conf->entity;
+	//$sql .= " AND ba.entity = " . $conf->entity;
 }
 if ($date_start && $date_end)
 	$sql .= " AND b.dateo >= '" . $db->idate($date_start) . "' AND b.dateo <= '" . $db->idate($date_end) . "'";

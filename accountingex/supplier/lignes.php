@@ -130,7 +130,7 @@ if (strlen(trim($_GET["search_account"]))) {
 	$sql .= " AND aa.account_number like '%" . $_GET["search_account"] . "%'";
 }
 if (! empty($conf->multicompany->enabled)) {
-	$sql .= " AND f.entity = '" . $conf->entity . "'";
+	//$sql .= " AND f.entity = '" . $conf->entity . "'";
 }
 
 $sql .= " ORDER BY l.rowid";

@@ -113,7 +113,7 @@ $sql .= " JOIN " . MAIN_DB_PREFIX . "facture_fourn f ON f.rowid = fd.fk_facture_
 $sql .= " JOIN " . MAIN_DB_PREFIX . "societe s ON s.rowid = f.fk_soc";
 $sql .= " WHERE f.fk_statut > 0 ";
 if (! empty($conf->multicompany->enabled)) {
-	$sql .= " AND f.entity = " . $conf->entity;
+	//$sql .= " AND f.entity = " . $conf->entity;
 }
 if (! empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS))
 	$sql .= " AND f.type IN (0,1,2)";

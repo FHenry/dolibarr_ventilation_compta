@@ -142,7 +142,9 @@ $sql .= " WHERE f.fk_soc = s.rowid";
 $sql .= " AND s.fk_pays = cp.rowid";
 if (! empty($date_start) && ! empty($date_end))
 	$sql .= " AND f.datec >= '" . $db->idate($date_start) . "' AND f.datec <= '" . $db->idate($date_end) . "'";
-$sql .= " AND f.entity = " . $conf->entity;
+if (! empty($conf->multicompany->enabled)) {
+	//$sql .= " AND f.entity = " . $conf->entity;
+}
 if ($socid)
 	$sql .= " AND f.fk_soc = " . $socid;
 $sql .= " GROUP BY name";
@@ -156,7 +158,9 @@ $sql .= " WHERE ff.fk_soc = s.rowid";
 $sql .= " AND s.fk_pays = cp.rowid";
 if (! empty($date_start) && ! empty($date_end))
 	$sql .= " AND ff.datec >= '" . $db->idate($date_start) . "' AND ff.datec <= '" . $db->idate($date_end) . "'";
-$sql .= " AND ff.entity = " . $conf->entity;
+if (! empty($conf->multicompany->enabled)) {
+	//$sql .= " AND ff.entity = " . $conf->entity;
+}
 if ($socid)
 	$sql .= " AND f.fk_soc = " . $socid;
 $sql .= " GROUP BY name";

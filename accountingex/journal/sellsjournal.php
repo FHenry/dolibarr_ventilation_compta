@@ -114,7 +114,7 @@ $sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "projet proj ON proj.rowid = f.fk_proje
 $sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "c_tva ct ON fd.tva_tx = ct.taux AND ct.fk_pays = '" . $idpays . "'";
 $sql .= " WHERE fd.fk_code_ventilation > 0";
 if (! empty($conf->multicompany->enabled)) {
-	$sql .= " AND f.entity = " . $conf->entity;
+	//$sql .= " AND f.entity = " . $conf->entity;
 }
 $sql .= " AND f.fk_statut > 0";
 if (! empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS))

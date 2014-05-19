@@ -125,7 +125,7 @@ $sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "accountingaccount as aa ON p.accountan
 $sql .= " WHERE f.fk_statut > 0 AND fk_code_ventilation = 0";
 
 if (! empty($conf->multicompany->enabled)) {
-	$sql .= " AND f.entity = '" . $conf->entity . "'";
+	//$sql .= " AND f.entity = '" . $conf->entity . "'";
 }
 
 $sql .= " ORDER BY l.rowid";

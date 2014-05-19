@@ -110,7 +110,7 @@ $sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "societe soc on bu1.url_id=soc.rowid";
 // Code opération type caisse
 $sql .= " WHERE ba.courant = 2";
 if (! empty($conf->multicompany->enabled)) {
-	$sql .= " AND ba.entity = " . $conf->entity;
+	//$sql .= " AND ba.entity = " . $conf->entity;
 }
 
 if ($date_start && $date_end)

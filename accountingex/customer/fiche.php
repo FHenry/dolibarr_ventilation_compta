@@ -92,7 +92,7 @@ if (! empty($id)) {
 	$sql .= " WHERE f.fk_statut > 0 AND l.rowid = " . $id;
 	
 	if (! empty($conf->multicompany->enabled)) {
-		$sql .= " AND f.entity = '" . $conf->entity . "'";
+		//$sql .= " AND f.entity = '" . $conf->entity . "'";
 	}
 	
 	dol_syslog("/accountingex/customer/fiche.php sql=" . $sql, LOG_DEBUG);
