@@ -215,9 +215,9 @@ if ($action == 'writebookkeeping') {
 			$bookkeeping->label_compte = $tabcompany[$key]['name'];
 			$bookkeeping->numero_compte = $conf->global->COMPTA_ACCOUNT_SUPPLIER;
 			$bookkeeping->montant = $mt;
-			$bookkeeping->sens = ($mt >= 0) ? 'D' : 'C';
-			$bookkeeping->debit = ($mt >= 0) ? $mt : 0;
-			$bookkeeping->credit = ($mt < 0) ? $mt : 0;
+			$bookkeeping->sens = ($mt >= 0) ? 'C' : 'D';
+			$bookkeeping->debit = ($mt <= 0) ? $mt : 0;
+			$bookkeeping->credit = ($mt > 0) ? $mt : 0;
 			$bookkeeping->code_journal = $conf->global->ACCOUNTINGEX_PURCHASE_JOURNAL;
 			
 			$bookkeeping->create();
@@ -240,9 +240,9 @@ if ($action == 'writebookkeeping') {
 					$bookkeeping->label_compte = dol_trunc($val["description"], 128);
 					$bookkeeping->numero_compte = $k;
 					$bookkeeping->montant = $mt;
-					$bookkeeping->sens = ($mt < 0) ? 'D' : 'C';
-					$bookkeeping->debit = ($mt < 0) ? $mt : 0;
-					$bookkeeping->credit = ($mt >= 0) ? $mt : 0;
+					$bookkeeping->sens = ($mt < 0) ? 'C' : 'D';
+					$bookkeeping->debit = ($mt > 0) ? $mt : 0;
+					$bookkeeping->credit = ($mt <= 0) ? $mt : 0;
 					$bookkeeping->code_journal = $conf->global->ACCOUNTINGEX_PURCHASE_JOURNAL;
 					
 					$bookkeeping->create();
@@ -267,9 +267,9 @@ if ($action == 'writebookkeeping') {
 				$bookkeeping->label_compte = $langs->trans("VAT");
 				$bookkeeping->numero_compte = $k;
 				$bookkeeping->montant = $mt;
-				$bookkeeping->sens = ($mt < 0) ? 'D' : 'C';
-				$bookkeeping->debit = ($mt < 0) ? $mt : 0;
-				$bookkeeping->credit = ($mt >= 0) ? $mt : 0;
+				$bookkeeping->sens = ($mt < 0) ? 'C' : 'D';
+				$bookkeeping->debit = ($mt > 0) ? $mt : 0;
+				$bookkeeping->credit = ($mt <= 0) ? $mt : 0;
 				$bookkeeping->code_journal = $conf->global->ACCOUNTINGEX_PURCHASE_JOURNAL;
 				
 				$bookkeeping->create();
