@@ -110,6 +110,7 @@ $sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "product p ON p.rowid = fd.fk_product";
 $sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "accountingaccount aa ON aa.rowid = fd.fk_code_ventilation";
 $sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "product_extrafields pextra ON pextra.fk_object = p.rowid";
 $sql .= " JOIN " . MAIN_DB_PREFIX . "facture_fourn f ON f.rowid = fd.fk_facture_fourn";
+$sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "projet proj ON proj.rowid = f.fk_projet";
 $sql .= " JOIN " . MAIN_DB_PREFIX . "societe s ON s.rowid = f.fk_soc";
 $sql .= " WHERE f.fk_statut > 0 ";
 if (! empty($conf->multicompany->enabled)) {
