@@ -38,7 +38,7 @@ if (! $res && file_exists("../../../main.inc.php"))
 if (! $res)
 	die("Include of main fails");
 	
-// Class
+	// Class
 dol_include_once("/core/lib/report.lib.php");
 dol_include_once("/core/lib/date.lib.php");
 dol_include_once("/accountingex/core/lib/account.lib.php");
@@ -142,25 +142,26 @@ if ($result) {
 				$compta_prod = (! empty($conf->global->COMPTA_SERVICE_BUY_ACCOUNT)) ? $conf->global->COMPTA_SERVICE_BUY_ACCOUNT : $langs->trans("CodeNotDef");
 		}
 		$compta_tva = (! empty($obj->account_tva) ? $obj->account_tva : $cpttva);
-			// la ligne facture
+		// la ligne facture
 		$tabfac[$obj->rowid]["date"] = $obj->df;
 		$tabfac[$obj->rowid]["ref"] = $obj->ref;
 		$tabfac[$obj->rowid]["type"] = $obj->type;
-		if (!empty($conf->global->ACCOUNTINGEX_GROUPBYACCOUNT)) {
-		$compte = new AccountingAccount($db);
-			$resultcompte=$compte->fetch($obj->fk_compte);
+		if (! empty($conf->global->ACCOUNTINGEX_GROUPBYACCOUNT)) {
+			$compte = new AccountingAccount($db);
+			$resultcompte = $compte->fetch($obj->fk_compte);
 			
 			if ($resultcompte) {
-			$tabfac[$obj->rowid]["description"] = $obj->description;
-		} }else {
+				$tabfac[$obj->rowid]["description"] = $obj->label_compte;
+			}
+		} else {
 			$tabfac[$obj->rowid]["description"][$obj->fdid] = $obj->description;
 		}
-		//$tabfac[$obj->rowid]["description"] = $obj->description;
+		// $tabfac[$obj->rowid]["description"] = $obj->description;
 		$tabfac[$obj->rowid]["fk_facturefourndet"] = $obj->fdid;
 		if (! isset($tabttc[$obj->rowid][$compta_soc]))
-			$tabttc[$obj->rowid][$compta_soc] = 0; 
+			$tabttc[$obj->rowid][$compta_soc] = 0;
 		
-		if (!empty($conf->global->ACCOUNTINGEX_GROUPBYACCOUNT)) {
+		if (! empty($conf->global->ACCOUNTINGEX_GROUPBYACCOUNT)) {
 			if (! isset($tabht[$obj->rowid][$compta_prod])) {
 				$tabht[$obj->rowid][$compta_prod] = 0;
 			}
@@ -177,11 +178,11 @@ if ($result) {
 			$tabtva[$obj->rowid][$compta_tva] = 0;
 		$tabttc[$obj->rowid][$compta_soc] += $obj->total_ttc;
 		
-		if (!empty($conf->global->ACCOUNTINGEX_GROUPBYACCOUNT)) {
+		if (! empty($conf->global->ACCOUNTINGEX_GROUPBYACCOUNT)) {
 			$tabht[$obj->rowid][$compta_prod] += $obj->total_ht;
 		} else {
-		
-		$tabht[$obj->rowid][$compta_prod] [$obj->fdid]= $obj->total_ht;
+			
+			$tabht[$obj->rowid][$compta_prod][$obj->fdid] = $obj->total_ht;
 		}
 		$tabtva[$obj->rowid][$compta_tva] += $obj->total_tva;
 		$tabcompany[$obj->rowid] = array (
@@ -192,7 +193,7 @@ if ($result) {
 		
 		$i ++;
 	}
-	}else {
+} else {
 	dol_print_error($db);
 }
 
@@ -459,34 +460,34 @@ if ($action == 'export_csv') {
 		// Product / Service
 		foreach ( $tabht[$key] as $k => $mt ) {
 			if (is_array($mt) && count($mt) > 0 && empty($conf->global->ACCOUNTINGEX_GROUPBYACCOUNT)) {
-			foreach ( $mt as $ligneid => $line_mt ) {
+				foreach ( $mt as $ligneid => $line_mt ) {
 					if ($mt) {
-				print "<tr " . $bc[$var] . " >";
-				// print "<td>".$conf->global->COMPTA_JOURNAL_BUY."</td>";
-				print "<td>" . $date . "</td>";
-				print "<td>" . $invoicestatic->getNomUrl(1) . "</td>";
-				print "<td>" . length_accountg($k) . "</td>";
-				print "<td>" .  html_entity_decode(dol_trunc($invoicestatic->description[$ligneid])) . "</td>";
-				print '<td align="right">' . ($mt >= 0 ? price($mt) : '') . "</td>";
-				print '<td align="right">' . ($mt < 0 ? price(- $mt) : '') . "</td>";
-				print "</tr>";
-			}
-			}
+						print "<tr " . $bc[$var] . " >";
+						// print "<td>".$conf->global->COMPTA_JOURNAL_BUY."</td>";
+						print "<td>" . $date . "</td>";
+						print "<td>" . $invoicestatic->getNomUrl(1) . "</td>";
+						print "<td>" . length_accountg($k) . "</td>";
+						print "<td>" . html_entity_decode(dol_trunc($invoicestatic->description[$ligneid])) . "</td>";
+						print '<td align="right">' . ($mt >= 0 ? price($mt) : '') . "</td>";
+						print '<td align="right">' . ($mt < 0 ? price(- $mt) : '') . "</td>";
+						print "</tr>";
+					}
+				}
 			} else {
 				if ($mt) {
-				$compte = new AccountingAccount($db);
-				$compte->fetch(null, $k) ;
-				print "<tr " . $bc[$var] . " >";
-				// print "<td>".$conf->global->COMPTA_JOURNAL_BUY."</td>";
-				print "<td>" . $date . "</td>";
-				print "<td>" . $invoicestatic->getNomUrl(1) . "</td>";
-				print "<td>" . length_accountg($k) . "</td>";
-				print "<td>" . html_entity_decode(dol_trunc($compte->label)) . "</td>";
-				print '<td align="right">' . ($mt >= 0 ? price($mt) : '') . "</td>";
-				print '<td align="right">' . ($mt < 0 ? price(- $mt) : '') . "</td>";
-				print "</tr>";
-		}
-		}
+					$compte = new AccountingAccount($db);
+					$compte->fetch(null, $k);
+					print "<tr " . $bc[$var] . " >";
+					// print "<td>".$conf->global->COMPTA_JOURNAL_BUY."</td>";
+					print "<td>" . $date . "</td>";
+					print "<td>" . $invoicestatic->getNomUrl(1) . "</td>";
+					print "<td>" . length_accountg($k) . "</td>";
+					print "<td>" . html_entity_decode(dol_trunc($compte->label)) . "</td>";
+					print '<td align="right">' . ($mt >= 0 ? price($mt) : '') . "</td>";
+					print '<td align="right">' . ($mt < 0 ? price(- $mt) : '') . "</td>";
+					print "</tr>";
+				}
+			}
 		}
 		// VAT
 		// var_dump($tabtva);

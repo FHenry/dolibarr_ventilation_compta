@@ -156,7 +156,7 @@ if ($result) {
 			$resultcompte=$compte->fetch($obj->fk_compte);
 			
 			if ($resultcompte) {
-				$tabfac[$obj->rowid]["description"]  = $compte->label;
+				$tabfac[$obj->rowid]["description"]  = $obj->label_compte;
 			}
 		} else {
 				$tabfac[$obj->rowid]["description"][$obj->fdid]= $obj->description;
