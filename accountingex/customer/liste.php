@@ -60,6 +60,23 @@ $formventilation = new FormVentilation($db);
 
 llxHeader('', $langs->trans("Ventilation"));
 
+print  '<script type="text/javascript">
+			$(function () {
+				$(\'#select-all\').click(function(event) {
+				    // Iterate each checkbox
+				    $(\':checkbox\').each(function() {
+				    	this.checked = true;
+				    });
+			    });
+			    $(\'#unselect-all\').click(function(event) {
+				    // Iterate each checkbox
+				    $(\':checkbox\').each(function() {
+				    	this.checked = false;
+				    });
+			    });
+			});
+			 </script>';
+
 /*
  * Action
 */
@@ -154,7 +171,7 @@ if ($result) {
 	print '<td align="right">' . $langs->trans("Amount") . '</td>';
 	print '<td align="right">' . $langs->trans("AccountAccounting") . '</td>';
 	print '<td align="center">' . $langs->trans("IntoAccount") . '</td>';
-	print '<td align="center">' . $langs->trans("Ventilate") . '</td>';
+	print '<td align="center">'.$langs->trans("Ventilate").'<BR><label id="select-all">'.$langs->trans('All').'</label>/<label id="unselect-all">'.$langs->trans('None').'</label>'.'</td>';
 	print '</tr>';
 	
 	$facture_static = new Facture($db);
@@ -227,7 +244,11 @@ if ($result) {
 		
 		// Colonne choix ligne a ventiler
 		print '<td align="center">';
-		print '<input type="checkbox" name="mesCasesCochees[]" value="' . $objp->rowid . "_" . $i . '"' . ($objp->code_sell ? "checked" : "") . '/>';
+		$checked='';
+		if (!empty($objp->code_sell) && $objp->code_sell!=$langs->trans("CodeNotDef")) {
+			$checked='checked="checked"';
+		}
+		print '<input type="checkbox" name="mesCasesCochees[]" value="' . $objp->rowid . "_" . $i . '"' . $checked . '/>';
 		print '</td>';
 		
 		print '</tr>';

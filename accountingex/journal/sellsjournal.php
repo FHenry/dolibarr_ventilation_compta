@@ -117,9 +117,9 @@ if (! empty($conf->multicompany->enabled)) {
 	//$sql .= " AND f.entity = " . $conf->entity;
 }
 $sql .= " AND f.fk_statut > 0";
-if (! empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS))
+/*if (! empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS))
 	$sql .= " AND f.type IN (0,1,2)";
-else
+else*/
 	$sql .= " AND f.type IN (0,1,2,3)";
 $sql .= " AND fd.product_type IN (0,1)";
 if ($date_start && $date_end)
