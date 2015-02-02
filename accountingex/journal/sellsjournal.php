@@ -124,6 +124,7 @@ else*/
 $sql .= " AND fd.product_type IN (0,1)";
 if ($date_start && $date_end)
 	$sql .= " AND f.datef >= '" . $db->idate($date_start) . "' AND f.datef <= '" . $db->idate($date_end) . "'";
+//$sql .= " AND f.fk_soc=7335"; 
 $sql .= " ORDER BY f.datef";
 
 dol_syslog('accountingex/journal/sellsjournal.php:: $sql=' . $sql);
@@ -188,6 +189,7 @@ if ($result) {
 			$tabht[$obj->rowid][$compta_prod] = 0;
 		if (! isset($tabtva[$obj->rowid][$compta_tva]))
 			$tabtva[$obj->rowid][$compta_tva] = 0;
+		
 		$tabttc[$obj->rowid][$compta_soc] += $obj->total_ttc;
 		$tabht[$obj->rowid][$compta_prod] += $obj->total_ht;
 		$tabtva[$obj->rowid][$compta_tva] += $obj->total_tva;
@@ -201,6 +203,34 @@ if ($result) {
 	}
 } else {
 	dol_print_error($db);
+}
+
+//Check deposit invoices...
+foreach($tabfac as $id=>$fact_array) {
+	
+	if ($fact_array['type']==0) {
+		//Find this "normal" invoice have been payd by deposit invoice
+		$sql_deposit = 'SELECT depositdet.total_ttc, depositdet.total_tva, depositdet.total_ht FROM '.MAIN_DB_PREFIX.'societe_remise_except as remx ';
+		$sql_deposit .= ' INNER JOIN '.MAIN_DB_PREFIX.'facture as deposit ON deposit.rowid=remx.fk_facture_source';
+		$sql_deposit .= ' INNER JOIN '.MAIN_DB_PREFIX.'facturedet as depositdet ON depositdet.fk_facture=deposit.rowid';
+		$sql_deposit .= '  WHERE remx.fk_facture='.$id;
+		dol_syslog('accountingex/journal/sellsjournal.php:: deposit invoices $sql_deposit=' . $sql_deposit);
+		$result_deposit = $db->query($sql_deposit);
+		if ($result_deposit) {
+			$objdeposit=$db->fetch_object($result_deposit);
+			if (!empty($objdeposit->total_tva) || !empty($objdeposit->total_ttc)) {
+				$tabttc[$id][$compta_soc] -= $objdeposit->total_ttc;
+				$tabht[$id][$compta_prod] -= $objdeposit->total_ht;
+				$tabtva[$id][$compta_tva]-= $objdeposit->total_tva;
+				//$tabfac[$id]['description']='Accompte';
+				$tabht[$id][4198000000] -= $objdeposit->total_ht;
+				
+			}
+			//var_dump($tabttc);
+		}else {
+			setEventMessage('Error:'.$db->lasterror(),'errors');
+		}
+	}
 }
 
 /*
@@ -429,9 +459,9 @@ if ($action == 'export_csv') {
 	$exportlink = '';
 	$builddate = time();
 	$description = $langs->trans("DescSellsJournal") . '<br>';
-	if (! empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS))
-		$description .= $langs->trans("DepositsAreNotIncluded");
-	else
+	//if (! empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS))
+		//$description .= $langs->trans("DepositsAreNotIncluded");
+	//else
 		$description .= $langs->trans("DepositsAreIncluded");
 	$period = $form->select_date($date_start, 'date_start', 0, 0, 0, '', 1, 0, 1) . ' - ' . $form->select_date($date_end, 'date_end', 0, 0, 0, '', 1, 0, 1);
 	report_header($nom, $nomlink, $period, $periodlink, $description, $builddate, $exportlink, array (
@@ -516,7 +546,12 @@ if ($action == 'export_csv') {
 				print "<td>" . $date . "</td>";
 				print "<td>" . $invoicestatic->getNomUrl(1) . "</td>";
 				print "<td>" . length_accountg($k) . "</td>";
-				print "<td>" . $invoicestatic->description . "</td>";
+				//var_dump($k);
+				if ($k==4198000000) {
+					print "<td>" . 'Accompte' . "</td>";
+				} else {
+					print "<td>" . 'Produit' . "</td>";
+				}
 				print "<td align='right'>" . ($mt < 0 ? price(- $mt) : '') . "</td>";
 				print "<td align='right'>" . ($mt >= 0 ? price($mt) : '') . "</td>";
 				print '<td align="right">' . $val['projet_ref'] . '</td>';
