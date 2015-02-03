@@ -124,7 +124,7 @@ else*/
 $sql .= " AND fd.product_type IN (0,1)";
 if ($date_start && $date_end)
 	$sql .= " AND f.datef >= '" . $db->idate($date_start) . "' AND f.datef <= '" . $db->idate($date_end) . "'";
-//$sql .= " AND f.fk_soc=7335"; 
+$sql .= " AND f.fk_soc=7335"; 
 $sql .= " ORDER BY f.datef";
 
 dol_syslog('accountingex/journal/sellsjournal.php:: $sql=' . $sql);
@@ -179,7 +179,9 @@ if ($result) {
 		// Propre
 		if ($obj->entity == 5) {
 			$tabfac[$obj->rowid]["compta_ana"] = substr($obj->projet_ref, 7, 4);
-		} else {
+		} /*elseif ($obj->entity == 2) {
+			$tabfac[$obj->rowid]["compta_ana"] = '2AAA';
+		}*/else {
 			$tabfac[$obj->rowid]["compta_ana"] = $tmprefix . $obj->pr_cd_analytics;
 		}
 		
@@ -214,17 +216,21 @@ foreach($tabfac as $id=>$fact_array) {
 		$sql_deposit .= ' INNER JOIN '.MAIN_DB_PREFIX.'facture as deposit ON deposit.rowid=remx.fk_facture_source';
 		$sql_deposit .= ' INNER JOIN '.MAIN_DB_PREFIX.'facturedet as depositdet ON depositdet.fk_facture=deposit.rowid';
 		$sql_deposit .= '  WHERE remx.fk_facture='.$id;
+		
+		
+		
 		dol_syslog('accountingex/journal/sellsjournal.php:: deposit invoices $sql_deposit=' . $sql_deposit);
 		$result_deposit = $db->query($sql_deposit);
 		if ($result_deposit) {
 			$objdeposit=$db->fetch_object($result_deposit);
 			if (!empty($objdeposit->total_tva) || !empty($objdeposit->total_ttc)) {
-				$tabttc[$id][$compta_soc] -= $objdeposit->total_ttc;
-				$tabht[$id][$compta_prod] -= $objdeposit->total_ht;
-				$tabtva[$id][$compta_tva]-= $objdeposit->total_tva;
-				//$tabfac[$id]['description']='Accompte';
-				$tabht[$id][4198000000] -= $objdeposit->total_ht;
 				
+				//var_dump($tabtva[$id]);
+				$tabttc[$id][key($tabttc[$id])] -= $objdeposit->total_ttc;
+				//$tabht[$id][key($tabht[$id])] -= $objdeposit->total_ht;
+				$tabtva[$id][key($tabtva[$id])]-= $objdeposit->total_tva;
+				$tabht[$id][4198000000] -= $objdeposit->total_ht;
+				//var_dump($tabtva[$id]);
 			}
 			//var_dump($tabttc);
 		}else {
@@ -509,7 +515,9 @@ if ($action == 'export_csv') {
 	
 	$invoicestatic = new Facture($db);
 	$companystatic = new Client($db);
-	
+	$total_credit=0;
+	$total_debit=0;
+	$total_balance=0;
 	foreach ( $tabfac as $key => $val ) {
 		$invoicestatic->id = $key;
 		$invoicestatic->ref = $val["ref"];
@@ -535,6 +543,9 @@ if ($action == 'export_csv') {
 			print "<td align='right'>" . ($mt < 0 ? price(- $mt) : '') . "</td>";
 			print '<td align="right">' . $val['projet_ref'] . '</td>';
 			print '<td align="right">' . $val['compta_ana'] . '</td>';
+			
+			$total_credit +=($mt >= 0 ? $mt : 0);
+			$total_debit +=($mt < 0 ? - $mt : 0);
 		}
 		print "</tr>";
 		
@@ -557,6 +568,9 @@ if ($action == 'export_csv') {
 				print '<td align="right">' . $val['projet_ref'] . '</td>';
 				print '<td align="right">' . $val['compta_ana'] . '</td>';
 				print "</tr>";
+				
+				$total_credit +=($mt < 0 ? - $mt : 0);
+				$total_debit +=($mt >= 0 ? $mt : 0);
 			}
 		}
 		
@@ -575,11 +589,28 @@ if ($action == 'export_csv') {
 				print '<td align="right">' . $val['projet_ref'] . '</td>';
 				print '<td align="right">' . $val['compta_ana'] . '</td>';
 				print "</tr>";
+				
+				$total_credit +=($mt < 0 ? - $mt : 0);
+				$total_debit +=($mt >= 0 ? $mt : 0);
 			}
 		}
 		
 		$var = ! $var;
+		
+		
 	}
+	
+	print "<tr " . $bc[$var] . ">";
+	// print "<td>".$conf->global->COMPTA_JOURNAL_SELL."</td>";
+	print "<td>TOTAL</td>";
+	print "<td></td>";
+	print "<td></td>";
+	print "<td></td>";
+	print "<td align='right'>" . price($total_credit) . "</td>";
+	print "<td align='right'>" .  price($total_debit) . "</td>";
+	print '<td align="right"></td>';
+	print '<td align="right"></td>';
+	print "</tr>";
 	
 	print "</table>";
 	
