@@ -119,12 +119,12 @@ if (! empty($conf->multicompany->enabled)) {
 $sql .= " AND f.fk_statut > 0";
 /*if (! empty($conf->global->FACTURE_DEPOSITS_ARE_JUST_PAYMENTS))
 	$sql .= " AND f.type IN (0,1,2)";
-else*/
+else*/	
 	$sql .= " AND f.type IN (0,1,2,3)";
 $sql .= " AND fd.product_type IN (0,1)";
 if ($date_start && $date_end)
 	$sql .= " AND f.datef >= '" . $db->idate($date_start) . "' AND f.datef <= '" . $db->idate($date_end) . "'";
-$sql .= " AND f.fk_soc=7335"; 
+//$sql .= " AND f.fk_soc=7335"; 
 $sql .= " ORDER BY f.datef";
 
 dol_syslog('accountingex/journal/sellsjournal.php:: $sql=' . $sql);
@@ -213,11 +213,9 @@ foreach($tabfac as $id=>$fact_array) {
 	if ($fact_array['type']==0) {
 		//Find this "normal" invoice have been payd by deposit invoice
 		$sql_deposit = 'SELECT depositdet.total_ttc, depositdet.total_tva, depositdet.total_ht FROM '.MAIN_DB_PREFIX.'societe_remise_except as remx ';
-		$sql_deposit .= ' INNER JOIN '.MAIN_DB_PREFIX.'facture as deposit ON deposit.rowid=remx.fk_facture_source';
+		$sql_deposit .= ' INNER JOIN '.MAIN_DB_PREFIX.'facture as deposit ON deposit.rowid=remx.fk_facture_source AND deposit.type=3';
 		$sql_deposit .= ' INNER JOIN '.MAIN_DB_PREFIX.'facturedet as depositdet ON depositdet.fk_facture=deposit.rowid';
 		$sql_deposit .= '  WHERE remx.fk_facture='.$id;
-		
-		
 		
 		dol_syslog('accountingex/journal/sellsjournal.php:: deposit invoices $sql_deposit=' . $sql_deposit);
 		$result_deposit = $db->query($sql_deposit);
@@ -229,7 +227,7 @@ foreach($tabfac as $id=>$fact_array) {
 				$tabttc[$id][key($tabttc[$id])] -= $objdeposit->total_ttc;
 				//$tabht[$id][key($tabht[$id])] -= $objdeposit->total_ht;
 				$tabtva[$id][key($tabtva[$id])]-= $objdeposit->total_tva;
-				$tabht[$id][4198000000] -= $objdeposit->total_ht;
+				$tabht[$id][$conf->global->ACCOUNTINGEX_ACCOUNT_DEPOSITFINALPAYEMENT] -= $objdeposit->total_ht;
 				//var_dump($tabtva[$id]);
 			}
 			//var_dump($tabttc);
@@ -558,7 +556,7 @@ if ($action == 'export_csv') {
 				print "<td>" . $invoicestatic->getNomUrl(1) . "</td>";
 				print "<td>" . length_accountg($k) . "</td>";
 				//var_dump($k);
-				if ($k==4198000000) {
+				if ($k==$conf->global->ACCOUNTINGEX_ACCOUNT_DEPOSITFINALPAYEMENT) {
 					print "<td>" . 'Accompte' . "</td>";
 				} else {
 					print "<td>" . 'Produit' . "</td>";

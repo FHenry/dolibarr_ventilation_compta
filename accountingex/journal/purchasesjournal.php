@@ -113,6 +113,7 @@ $sql .= " JOIN " . MAIN_DB_PREFIX . "facture_fourn f ON f.rowid = fd.fk_facture_
 $sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "projet proj ON proj.rowid = f.fk_projet";
 $sql .= " JOIN " . MAIN_DB_PREFIX . "societe s ON s.rowid = f.fk_soc";
 $sql .= " WHERE f.fk_statut > 0 ";
+$sql .= " AND fd.fk_code_ventilation > 0";
 if (! empty($conf->multicompany->enabled)) {
 	//$sql .= " AND f.entity = " . $conf->entity;
 }

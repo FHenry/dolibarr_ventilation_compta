@@ -164,6 +164,11 @@ class modAccountingExpert extends DolibarrModules {
 				"yesno",
 				"1" 
 		);
+		$this->const[17] = array (
+				"ACCOUNTINGEX_ACCOUNT_DEPOSITFINALPAYEMENT",
+				"chaine",
+				"58"
+		);
 		
 		// Css
 		$this->module_parts = array (

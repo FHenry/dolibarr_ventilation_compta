@@ -90,6 +90,7 @@ ACCOUNTINGEX_SOCIAL_JOURNAL=Journal Social
 
 ACCOUNTINGEX_ACCOUNT_TRANSFER_CASH=Compte de transfert espèce
 ACCOUNTINGEX_ACCOUNT_SUSPENSE=Compte d'attente
+ACCOUNTINGEX_ACCOUNT_DEPOSITFINALPAYEMENT=Compte des accomptes en credit sur facture finnale
 
 COMPTA_PRODUCT_BUY_ACCOUNT=Compte comptable par défaut pour les produits achetés (si non défini dans la fiche produit)
 COMPTA_PRODUCT_SOLD_ACCOUNT=Compte comptable par défaut pour les produits vendus (si non défini dans la fiche produit)
