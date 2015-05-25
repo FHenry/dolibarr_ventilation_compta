@@ -135,6 +135,7 @@ if ($result) {
 	$tabtva = array ();
 	$tabttc = array ();
 	$tabcompany = array ();
+	$tabcomptanna = array ();
 	
 	$num = $db->num_rows($result);
 	$i = 0;
@@ -181,8 +182,11 @@ if ($result) {
 			$tabfac[$obj->rowid]["compta_ana"] = substr($obj->projet_ref, 7, 4);
 		} /*elseif ($obj->entity == 2) {
 			$tabfac[$obj->rowid]["compta_ana"] = '2AAA';
-		}*/else {
+		}*/elseif (!empty($obj->pr_cd_analytics)) {
 			$tabfac[$obj->rowid]["compta_ana"] = $tmprefix . $obj->pr_cd_analytics;
+		} else {
+			$tabfac[$obj->rowid]["compta_ana"] = $tmprefix . '000';
+			//var_dump($obj->rowid);
 		}
 		
 		if (! isset($tabttc[$obj->rowid][$compta_soc]))
