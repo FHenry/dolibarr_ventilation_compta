@@ -243,4 +243,56 @@ class FormVentilation extends Form {
 		$this->db->free($resql);
 		return $out;
 	}
+	
+	/**
+	 *	Show only Document icon with link
+	 *
+	 *	@param	string	$modulepart		propal, facture, facture_fourn, ...
+	 *	@param	string	$modulesubdir	Sub-directory to scan (Example: '0/1/10', 'FA/DD/MM/YY/9999'). Use '' if file is not into subdir of module.
+	 *	@param	string	$filedir		Directory to scan
+	 *	@return	string              	Output string with HTML link of documents (might be empty string)
+	 */
+	function getDocumentsLinkCompta($modulepart, $modulesubdir, $filedir)
+	{
+		if (! function_exists('dol_dir_list')) include_once DOL_DOCUMENT_ROOT.'/core/lib/files.lib.php';
+	
+		$out='';
+	
+		$this->numoffiles=0;
+	
+		$file_list=dol_dir_list($filedir, 'files', 0, preg_quote($modulesubdir.'.pdf','/'), '\.meta$|\.png$');
+	
+		// For ajax treatment
+		$out.= '<div id="gen_pdf_'.$modulesubdir.'" class="linkobject hideobject">'.img_picto('', 'refresh').'</div>'."\n";
+	
+		if (! empty($file_list))
+		{
+			// Loop on each file found
+			foreach($file_list as $file)
+			{
+				// Define relative path for download link (depends on module)
+				$relativepath=$file["name"];								// Cas general
+				if ($modulesubdir) $relativepath=$modulesubdir."/".$file["name"];	// Cas propal, facture...
+				// Autre cas
+				if ($modulepart == 'donation')            {
+					$relativepath = get_exdir($modulesubdir,2).$file["name"];
+				}
+				if ($modulepart == 'export')              {
+					$relativepath = $file["name"];
+				}
+	
+				// Show file name with link to download
+				$out.= '<a data-ajax="false" href="'.dol_buildpath('/accountingex/document.php',1) . '?modulepart='.$modulepart.'&amp;file='.urlencode($relativepath).'&amp;filedir='.$filedir.'"';
+				$mime=dol_mimetype($relativepath,'',0);
+				if (preg_match('/text/',$mime)) $out.= ' target="_blank"';
+				$out.= '>';
+				$out.= img_pdf($file["name"],2);
+				$out.= '</a>'."\n";
+	
+				$this->numoffiles++;
+			}
+		}
+	
+		return $out;
+	}
 }

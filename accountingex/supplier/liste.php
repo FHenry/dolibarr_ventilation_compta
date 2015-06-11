@@ -136,6 +136,7 @@ $offset = $limit * $page;
 
 $sql = "SELECT f.ref, f.rowid as facid, f.ref_supplier, l.fk_product, l.description, l.total_ht as price, l.rowid, l.fk_code_ventilation, ";
 $sql .= " p.rowid as product_id, p.ref as product_ref, p.label as product_label, p.fk_product_type as type, p.accountancy_code_buy as code_buy";
+$sql .= " , f.entity as factentity";
 $sql .= " FROM " . MAIN_DB_PREFIX . "facture_fourn as f";
 $sql .= " INNER JOIN " . MAIN_DB_PREFIX . "facture_fourn_det as l ON f.rowid = l.fk_facture_fourn";
 $sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "product as p ON p.rowid = l.fk_product";
@@ -169,6 +170,7 @@ if ($result) {
 	print '<table class="noborder" width="100%">';
 	print '<tr class="liste_titre"><td>Facture</td>';
 	print '<td align="left">' . $langs->trans("Ref") . '</td>';
+	print '<td align="left"></td>';
 	print '<td align="left">' . $langs->trans("Label") . '</td>';
 	print '<td>' . $langs->trans("Description") . '</td>';
 	print '<td align="right">' . $langs->trans("Amount") . '</td>';
@@ -191,6 +193,13 @@ if ($result) {
 		$facturefourn_static->ref = $objp->ref;
 		$facturefourn_static->id = $objp->facid;
 		print '<td>' . $facturefourn_static->getNomUrl(1) . '</td>';
+		
+		//File link
+		print '<td>';
+		$filename=dol_sanitizeFileName($facturefourn_static->ref);
+		$filedir=DOL_DATA_ROOT.'/'.$objp->factentity.'/fournisseur/facture' . '/' .get_exdir($facturefourn_static->id,2). dol_sanitizeFileName($facturefourn_static->ref);
+		print $formventilation->getDocumentsLinkCompta('facture_fournisseur', $filename, $filedir);
+		print '</td>';
 		
 		// Ref facture supplier
 		$productfourn_static->ref = $objp->product_ref;

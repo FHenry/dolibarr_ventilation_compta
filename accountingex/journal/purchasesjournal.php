@@ -47,6 +47,7 @@ dol_include_once("/fourn/class/fournisseur.class.php");
 dol_include_once("/societe/class/client.class.php");
 dol_include_once("/accountingex/class/bookkeeping.class.php");
 dol_include_once("/accountingex/class/accountingaccount.class.php");
+dol_include_once("/accountingex/class/html.formventilation.class.php");
 
 // Langs
 $langs->load("compta");
@@ -61,6 +62,8 @@ $date_startyear = GETPOST('date_startyear');
 $date_endmonth = GETPOST('date_endmonth');
 $date_endday = GETPOST('date_endday');
 $date_endyear = GETPOST('date_endyear');
+
+//$formfile = new FormFile($db);
 
 // Security check
 if ($user->societe_id > 0)
@@ -161,6 +164,7 @@ if ($result) {
 		$tabfac[$obj->rowid]["fk_facturefourndet"] = $obj->fdid;
 		$tabfac[$obj->rowid]["projet_id"] = $obj->projet_id;
 		$tabfac[$obj->rowid]["projet_ref"] = $obj->projet_ref;
+		$tabfac[$obj->rowid]["entity"] = $obj->entity;
 		// Centre des congrés
 		$tmprefix = 'N/A';
 		if ($obj->entity == 3) {
@@ -410,6 +414,7 @@ if ($action == 'export_csv') {
 	llxHeader('', '', '');
 	
 	$form = new Form($db);
+	$formfile = new FormVentilation($db);
 	
 	$nom = $langs->trans("PurchasesJournal");
 	$nomlink = '';
@@ -455,6 +460,7 @@ if ($action == 'export_csv') {
 	// /print "<td>".$langs->trans("JournalNum")."</td>";
 	print "<td>" . $langs->trans("Date") . "</td>";
 	print "<td>" . $langs->trans("Piece") . ' (' . $langs->trans("InvoiceRef") . ")</td>";
+	print "<td></td>";
 	print "<td>" . $langs->trans("Account") . "</td>";
 	print "<t><td>" . $langs->trans("Type") . "</td><td align='right'>" . $langs->trans("Debit") . "</td><td align='right'>" . $langs->trans("Credit") . "</td>";
 	print "<td align='right'>" . $langs->trans("Projet") . "</td>";
@@ -482,6 +488,11 @@ if ($action == 'export_csv') {
 				// print "<td>".$conf->global->COMPTA_JOURNAL_BUY."</td>";
 				print "<td>" . $date . "</td>";
 				print "<td>" . $invoicestatic->getNomUrl(1) . "</td>";
+				print "<td>";
+				$filename=dol_sanitizeFileName($invoicestatic->ref);
+				$filedir=DOL_DATA_ROOT.'/'.$val['entity'].'/fournisseur/facture' . '/' .get_exdir($key,2). dol_sanitizeFileName($invoicestatic->ref);
+				print $formfile->getDocumentsLinkCompta('facture_fournisseur', $filename, $filedir);
+				print "</td>";
 				print "<td>" . length_accountg($k) . "</td>";
 				print "<td>" . $invoicestatic->description . "</td>";
 				print '<td align="right">' . ($mt >= 0 ? price($mt) : '') . "</td>";
@@ -499,6 +510,11 @@ if ($action == 'export_csv') {
 				// print "<td>".$conf->global->COMPTA_JOURNAL_BUY."</td>";
 				print "<td>" . $date . "</td>";
 				print "<td>" . $invoicestatic->getNomUrl(1) . "</td>";
+				print "<td>";
+				$filename=dol_sanitizeFileName($invoicestatic->ref);
+				$filedir=DOL_DATA_ROOT.'/'.$val['entity'].'/fournisseur/facture' . '/' .get_exdir($key,2). dol_sanitizeFileName($invoicestatic->ref);
+				print $formfile->getDocumentsLinkCompta('facture_fournisseur', $filename, $filedir);
+				print "</td>";
 				print "<td>" . length_accountg($k) . "</td><td>" . $langs->trans("VAT") . "</td>";
 				print '<td align="right">' . ($mt >= 0 ? price($mt) : '') . "</td>";
 				print '<td align="right">' . ($mt < 0 ? price(- $mt) : '') . "</td>";
@@ -513,6 +529,11 @@ if ($action == 'export_csv') {
 		// print "<td>".$conf->global->COMPTA_JOURNAL_BUY."</td>";
 		print "<td>" . $date . "</td>";
 		print "<td>" . $invoicestatic->getNomUrl(1) . "</td>";
+		print "<td>";
+		$filename=dol_sanitizeFileName($invoicestatic->ref);
+		$filedir=DOL_DATA_ROOT.'/'.$val['entity'].'/fournisseur/facture' . '/' .get_exdir($key,2). dol_sanitizeFileName($invoicestatic->ref);
+		print $formfile->getDocumentsLinkCompta('facture_fournisseur', $filename, $filedir);
+		print "</td>";
 		
 		foreach ( $tabttc[$key] as $k => $mt ) {
 			$companystatic->id = $tabcompany[$key]['id'];
