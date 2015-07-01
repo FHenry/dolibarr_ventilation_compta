@@ -111,11 +111,10 @@ $original_file = str_replace("../","/", $original_file);
 
 // Find the subdirectory name as the reference
 $refname=basename(dirname($original_file)."/");
-var_dump($refname);
+
 // Security check
 if (empty($modulepart)) accessforbidden('Bad value for parameter modulepart');
-var_dump($original_file);
-var_dump($filedir);
+
 
 $original_file = str_replace($refname.'/','',$original_file);
 $original_file=$filedir.'/'.$original_file;
@@ -176,7 +175,7 @@ $filename = basename($original_file);
 // Output file on browser
 dol_syslog("document.php download $original_file $filename content-type=$type");
 $original_file_osencoded=dol_osencode($original_file);	// New file name encoded in OS encoding charset
-
+dol_syslog("document.php download original_file_osencoded= $original_file_osencoded");
 // This test if file exists should be useless. We keep it to find bug more easily
 if (! file_exists($original_file_osencoded))
 {

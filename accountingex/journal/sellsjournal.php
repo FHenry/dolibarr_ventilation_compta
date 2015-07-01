@@ -406,7 +406,8 @@ if ($action == 'export_csv') {
 				print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
 				print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
 				if ((substr($k, 0, 2) == '40') || (substr($k, 0, 2) == '41')) {
-					print '"029CCCC"' . $sep;
+					//print '"029CCCC"' . $sep;
+					print substr($k, 0, 3).str_pad($companystatic->id, 5, "0", STR_PAD_LEFT) . $sep;
 				} else {
 					print '""' . $sep;
 				}
@@ -428,7 +429,8 @@ if ($action == 'export_csv') {
 					print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
 					print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
 					if ((substr($k, 0, 2) == '40') || (substr($k, 0, 2) == '41')) {
-						print '"029CCCC"' . $sep;
+						//print '"029CCCC"' . $sep;
+						print substr($k, 0, 3).str_pad($companystatic->id, 5, "0", STR_PAD_LEFT) . $sep;
 					} else {
 						print '""' . $sep;
 					}

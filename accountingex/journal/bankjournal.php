@@ -183,6 +183,7 @@ if ($result) {
 				$societestatic->id = $links[$key]['url_id'];
 				$societestatic->nom = $links[$key]['label'];
 				$tabpay[$obj->rowid]["soclib"] = $societestatic->getNomUrl(1, '', 30);
+				$tabpay[$obj->rowid]["socid"] = $societestatic->id;
 				$tabtp[$obj->rowid][$compta_soc] += $obj->amount;
 			} else if ($links[$key]['type'] == 'sc') {
 				
@@ -443,6 +444,7 @@ if ($action == 'export_csv') {
 			foreach ( $tabbq[$key] as $k => $mt ) {
 				print '"' . length_accountg(html_entity_decode($k)) . '"' . $sep;
 				print '"' . $langs->trans("Bank") . '"' . $sep;
+				print '""' . $sep;
 				print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
 				print '"' . ($mt < 0 ? price(- $mt) : '') . '"';
 			}
@@ -456,6 +458,7 @@ if ($action == 'export_csv') {
 					
 					print '"' . length_accounta(html_entity_decode($k)) . '"' . $sep;
 					print '"' . $companystatic->name . '"' . $sep;
+					print '"' . substr($k, 0, 3).str_pad($val['socid'], 5, "0", STR_PAD_LEFT) . '"' . $sep;
 					print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
 					print '"' . ($mt >= 0 ? price($mt) : '') . '"';
 					print "\n";
@@ -510,6 +513,7 @@ if ($action == 'export_csv') {
 	print "<td>" . $langs->trans("Piece") . ' (' . $langs->trans("InvoiceRef") . ")</td>";
 	print "<td>" . $langs->trans("Account") . "</td>";
 	print "<td>" . $langs->trans("Type") . "</td>";
+	print "<td>" . $langs->trans("Code Auxiliaire") . "</td>";
 	print "<td align='right'>" . $langs->trans("Debit") . "</td><td align='right'>" . $langs->trans("Credit") . "</td>";
 	print "</tr>\n";
 	
@@ -532,6 +536,7 @@ if ($action == 'export_csv') {
 				print "<td>" . $reflabel . "</td>";
 				print "<td>" . length_accountg($k) . "</td>";
 				print "<td>" . $langs->trans('Bank') . "</td>";
+				print "<td></td>";
 				print "<td align='right'>" . ($mt >= 0 ? price($mt) : '') . "</td>";
 				print "<td align='right'>" . ($mt < 0 ? price(- $mt) : '') . "</td>";
 				print "</tr>";
@@ -546,6 +551,9 @@ if ($action == 'export_csv') {
 				print "<td>" . $val["soclib"] . "</td>";
 				print "<td>" . length_accounta($k) . "</td>";
 				print "<td>" . $langs->trans('ThirdParty') . " (" . $val['soclib'] . ")</td>";
+				print "<td>" ; 
+				print substr($k, 0, 3).str_pad($val['socid'], 5, "0", STR_PAD_LEFT);
+				print "</td>";
 				print "<td align='right'>" . ($mt < 0 ? price(- $mt) : '') . "</td>";
 				print "<td align='right'>" . ($mt >= 0 ? price($mt) : '') . "</td>";
 				print "</tr>";

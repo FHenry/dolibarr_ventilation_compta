@@ -181,9 +181,15 @@ if ($result) {
 		// Propre
 		if ($obj->entity == 5) {
 			$tabfac[$obj->rowid]["compta_ana"] = substr($obj->projet_ref, 7, 4);
+		} /*elseif ($obj->entity == 2) {
+		$tabfac[$obj->rowid]["compta_ana"] = '2AAA';
+		}*/elseif (!empty($obj->pr_cd_analytics)) {
+		$tabfac[$obj->rowid]["compta_ana"] = $tmprefix . $obj->pr_cd_analytics;
 		} else {
-			$tabfac[$obj->rowid]["compta_ana"] = $tmprefix . $obj->pr_cd_analytics;
+			$tabfac[$obj->rowid]["compta_ana"] = $tmprefix . '000';
+			//var_dump($obj->rowid);
 		}
+		
 		$tabttc[$obj->rowid][$compta_soc] += $obj->total_ttc;
 		$tabht[$obj->rowid][$compta_prod] += $obj->total_ht;
 		$tabtva[$obj->rowid][$compta_tva] += $obj->total_tva;
@@ -399,7 +405,8 @@ if ($action == 'export_csv') {
 				print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
 				print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
 				if ((substr($k, 0, 3) == '401') || (substr($k, 0, 3) == '419')) {
-					print '"029FFFF"' . $sep;
+					//print '"029FFFF"' . $sep;
+					print substr($k, 0, 3).str_pad($companystatic->id, 5, "0", STR_PAD_LEFT) . $sep;
 				} else {
 					print '""' . $sep;
 				}
