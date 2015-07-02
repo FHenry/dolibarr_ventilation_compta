@@ -514,6 +514,7 @@ if ($action == 'export_csv') {
 	print "<td></td>"; 
 	print "<td>" . $langs->trans("Account") . "</td>";
 	print "<td>" . $langs->trans("Type") . "</td>";
+	print "<td>" . $langs->trans("Code Auxiliaire") . "</td>";
 	print "<td align='right'>" . $langs->trans("Debit") . "</td>";
 	print "<td align='right'>" . $langs->trans("Credit") . "</td>";
 	print "<th align='right'>" . $langs->trans("Projet") . "</th>";
@@ -555,7 +556,11 @@ if ($action == 'export_csv') {
 			print "<td>" . length_accounta($k);
 			print "</td><td>" . $langs->trans("ThirdParty");
 			print ' (' . $companystatic->getNomUrl(0, 'customer', 16) . ')';
-			print "</td><td align='right'>" . ($mt >= 0 ? price($mt) : '') . "</td>";
+			print "</td>";
+			print "<td>" ;
+			print substr($k, 0, 3).str_pad($companystatic->id, 5, "0", STR_PAD_LEFT);
+			print "</td>";
+			print "<td align='right'>" . ($mt >= 0 ? price($mt) : '') . "</td>";
 			print "<td align='right'>" . ($mt < 0 ? price(- $mt) : '') . "</td>";
 			print '<td align="right">' . $val['projet_ref'] . '</td>';
 			print '<td align="right">' . $val['compta_ana'] . '</td>';
@@ -585,6 +590,8 @@ if ($action == 'export_csv') {
 				} else {
 					print "<td>" . 'Produit' . "</td>";
 				}
+				print "<td>" ;
+				print "</td>" ;
 				print "<td align='right'>" . ($mt < 0 ? price(- $mt) : '') . "</td>";
 				print "<td align='right'>" . ($mt >= 0 ? price($mt) : '') . "</td>";
 				print '<td align="right">' . $val['projet_ref'] . '</td>';
@@ -611,6 +618,8 @@ if ($action == 'export_csv') {
 				print "</td>";
 				print "<td>" . length_accountg($k) . "</td>";
 				print "<td>" . $langs->trans("VAT") . "</td>";
+				print "<td>" ;
+				print "</td>" ;
 				print "<td align='right'>" . ($mt < 0 ? price(- $mt) : '') . "</td>";
 				print "<td align='right'>" . ($mt >= 0 ? price($mt) : '') . "</td>";
 				print '<td align="right">' . $val['projet_ref'] . '</td>';
