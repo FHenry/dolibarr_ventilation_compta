@@ -138,7 +138,7 @@ $sql .= " FROM " . MAIN_DB_PREFIX . "facture as f";
 $sql .= " INNER JOIN " . MAIN_DB_PREFIX . "facturedet as l ON f.rowid = l.fk_facture";
 $sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "product as p ON p.rowid = l.fk_product";
 $sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "accountingaccount as aa ON p.accountancy_code_sell = aa.account_number";
-$sql .= " WHERE f.fk_statut > 0 AND fk_code_ventilation = 0";
+$sql .= " WHERE f.fk_statut > 0 AND l.fk_code_ventilation = 0 AND l.product_type<>9";
 
 if (! empty($conf->multicompany->enabled)) {
 	//$sql .= " AND f.entity = '" . $conf->entity . "'";
@@ -166,8 +166,8 @@ if ($result) {
 	
 	print '<table class="noborder" width="100%">';
 	print '<tr class="liste_titre"><td>' . $langs->trans("Invoice") . '</td>';
-	//print '<td>' . $langs->trans("Ref") . '</td>';
 	print '<td></td>';
+	print '<td>' . $langs->trans("Ref") . '</td>';
 	print '<td>' . $langs->trans("Label") . '</td>';
 	print '<td>' . $langs->trans("Description") . '</td>';
 	print '<td align="right">' . $langs->trans("Amount") . '</td>';
