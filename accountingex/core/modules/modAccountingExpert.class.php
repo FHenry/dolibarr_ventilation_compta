@@ -36,8 +36,8 @@ class modAccountingExpert extends DolibarrModules {
 	 *
 	 * @param DoliDB $db
 	 */
-	function modAccountingExpert($DB) {
-		$this->db = $DB;
+	function __construct($db) {
+		$this->db = $db;
 		$this->numero = 150000;
 		
 		$this->family = "financial";
