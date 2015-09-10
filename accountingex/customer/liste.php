@@ -93,6 +93,7 @@ if ($action == 'ventil') {
 			$monId = $maLigneCourante[0];
 			$monNumLigne = $maLigneCourante[1];
 			$monCompte = $mesCodesVentilChoisis[$monNumLigne];
+			if ($monCompte==-1) {$monCompte=0;}
 			
 			$sql = " UPDATE " . MAIN_DB_PREFIX . "facturedet";
 			$sql .= " SET fk_code_ventilation = " . $monCompte;
@@ -138,7 +139,7 @@ $sql .= " FROM " . MAIN_DB_PREFIX . "facture as f";
 $sql .= " INNER JOIN " . MAIN_DB_PREFIX . "facturedet as l ON f.rowid = l.fk_facture";
 $sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "product as p ON p.rowid = l.fk_product";
 $sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "accountingaccount as aa ON p.accountancy_code_sell = aa.account_number";
-$sql .= " WHERE f.fk_statut > 0 AND l.fk_code_ventilation = 0 AND l.product_type<>9";
+$sql .= " WHERE f.fk_statut > 0 AND l.fk_code_ventilation IN (0,-1) AND l.product_type<>9";
 
 if (! empty($conf->multicompany->enabled)) {
 	//$sql .= " AND f.entity = '" . $conf->entity . "'";
@@ -148,6 +149,7 @@ $sql .= " ORDER BY l.rowid";
 if ($conf->global->ACCOUNTINGEX_LIST_SORT_VENTILATION_TODO > 0) {
 	$sql .= " DESC ";
 }
+
 $sql .= $db->plimit($limit + 1, $offset);
 
 dol_syslog("/accountingex/customer/liste.php sql=" . $sql, LOG_DEBUG);
@@ -248,7 +250,7 @@ if ($result) {
 		
 		// Colonne choix du compte
 		print '<td align="center">';
-		print $formventilation->select_account($objp->aarowid, 'codeventil[]', 1);
+		print $formventilation->select_account(empty($objp->aarowid)?$objp->code_sell:$objp->aarowid, 'codeventil[]', 1,array(),empty($objp->aarowid)?'account_number':'rowid');
 		print '</td>';
 		
 		// Colonne choix ligne a ventiler

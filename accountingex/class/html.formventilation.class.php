@@ -90,7 +90,7 @@ class FormVentilation extends Form {
 	 *       
 	 * @return string with HTML select
 	 */
-	function select_account($selectid, $htmlname = 'account', $showempty = 0, $event = array()) {
+	function select_account($selectid, $htmlname = 'account', $showempty = 0, $event = array(),$fielname='rowid') {
 		global $conf, $user, $langs;
 		
 		$out = '';
@@ -120,7 +120,7 @@ class FormVentilation extends Form {
 					
 					// Remember guy's we store in database llx_facturedet the rowid of accountingaccount and not the account_number
 					// Bacause same account_number can be share between different accounting_system and do have the same meaning
-					if (($selectid != '') && $selectid == $obj->rowid) {
+					if (($selectid != '') && $selectid == $obj->$fielname) {
 						// $out .= '<option value="' . $obj->account_number . '" selected="selected">' . $label . '</option>';
 						$out .= '<option value="' . $obj->rowid . '" selected="selected">' . $label . '</option>';
 					} else {

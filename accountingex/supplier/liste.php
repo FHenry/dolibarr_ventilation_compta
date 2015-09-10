@@ -96,6 +96,7 @@ if ($action == 'ventil') {
 			$monId = $maLigneCourante[0];
 			$monNumLigne = $maLigneCourante[1];
 			$monCompte = $mesCodesVentilChoisis[$monNumLigne];
+			if ($monCompte==-1) {$monCompte=0;}
 			
 			$sql = " UPDATE " . MAIN_DB_PREFIX . "facture_fourn_det";
 			$sql .= " SET fk_code_ventilation = " . $monCompte;
@@ -141,7 +142,7 @@ $sql .= " FROM " . MAIN_DB_PREFIX . "facture_fourn as f";
 $sql .= " INNER JOIN " . MAIN_DB_PREFIX . "facture_fourn_det as l ON f.rowid = l.fk_facture_fourn";
 $sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "product as p ON p.rowid = l.fk_product";
 $sql .= " LEFT JOIN " . MAIN_DB_PREFIX . "accountingaccount as aa ON p.accountancy_code_buy = aa.account_number";
-$sql .= " WHERE f.fk_statut > 0 AND l.fk_code_ventilation = 0 AND l.product_type<>9";
+$sql .= " WHERE f.fk_statut > 0 AND l.fk_code_ventilation IN (0,-1) AND l.product_type<>9";
 
 if (! empty($conf->multicompany->enabled)) {
 	//$sql .= " AND f.entity = '" . $conf->entity . "'";
@@ -230,7 +231,8 @@ if ($result) {
 		
 		// Colonne choix du compte
 		print '<td align="center">';
-		print $formventilation->select_account($objp->aarowid, 'codeventil[]', 1);
+		print $formventilation->select_account(empty($objp->aarowid)?$objp->code_buy:$objp->aarowid, 'codeventil[]', 1,array(),empty($objp->aarowid)?'account_number':'rowid');
+		//print $formventilation->select_account($objp->aarowid, 'codeventil[]', 1);
 		print '</td>';
 		// Colonne choix ligne a ventiler
 		print '<td align="center">';

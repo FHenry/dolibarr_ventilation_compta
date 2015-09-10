@@ -643,6 +643,7 @@ if ($action == 'export_csv') {
 	print "<td></td>";
 	print "<td></td>";
 	print "<td></td>";
+	print "<td></td>";
 	print "<td align='right'>" . price($total_credit) . "</td>";
 	print "<td align='right'>" .  price($total_debit) . "</td>";
 	print '<td align="right"></td>';
