@@ -437,30 +437,40 @@ if ($action == 'export_csv') {
 			$companystatic->id = $tabcompany[$key]['id'];
 			$companystatic->name = $tabcompany[$key]['name'];
 			
-			print '"' . $date . '"' . $sep;
-			print '"' . $val["ref"] . '"' . $sep;
+			print '"0029"' . $sep;
+			print '""' . $sep;
+			print '"CA"' . $sep;
+			//print '"' . $date . '"' . $sep;
+			//print '"' . $val["ref"] . '"' . $sep;
 			
 			// Bank
 			foreach ( $tabbq[$key] as $k => $mt ) {
 				print '"' . length_accountg(html_entity_decode($k)) . '"' . $sep;
 				print '"' . $langs->trans("Bank") . '"' . $sep;
-				print '""' . $sep;
 				print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
-				print '"' . ($mt < 0 ? price(- $mt) : '') . '"';
+				print '"' . ($mt < 0 ? price(- $mt) : '') . '"'. $sep;
+				print '""' . $sep;
+				print '"' . $date . '"' . $sep;
+				
 			}
 			print "\n";
 			
 			// Third party
 			foreach ( $tabtp[$key] as $k => $mt ) {
 				if ($mt) {
-					print '"' . $date . '"' . $sep;
-					print '"' . $val["ref"] . '"' . $sep;
+					print '"0029"' . $sep;
+					print '""' . $sep;
+					print '"CA"' . $sep;
+					//print '"ss' . $date . '"' . $sep;
+					//print '"' . $val["ref"] . '"' . $sep;
 					
 					print '"' . length_accounta(html_entity_decode($k)) . '"' . $sep;
 					print '"' . $companystatic->name . '"' . $sep;
-					print '"' . substr($k, 0, 3).str_pad($val['socid'], 5, "0", STR_PAD_LEFT) . '"' . $sep;
 					print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
-					print '"' . ($mt >= 0 ? price($mt) : '') . '"';
+					print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
+					print '"' . substr($k, 0, 3).str_pad($val['socid'], 5, "0", STR_PAD_LEFT) . '"' . $sep;
+					print '"' . $date . '"' . $sep;
+					
 					print "\n";
 				}
 			}
