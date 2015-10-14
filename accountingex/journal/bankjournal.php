@@ -59,7 +59,7 @@ dol_include_once("/societe/class/client.class.php");
 $langs->load("companies");
 $langs->load("other");
 $langs->load("compta");
-$langs->load("bank");
+$langs->load("banks");
 $langs->load("accountingex@accountingex");
 
 $date_startmonth = GETPOST('date_startmonth');
@@ -136,16 +136,18 @@ if ($result) {
 	$tabpay = array ();
 	$tabbq = array ();
 	$tabtp = array ();
-	$tabcompany[$obj->rowid] = array (
-			'id' => $obj->socid,
-			'name' => $obj->name,
-			'code_client' => $obj->code_compta 
-	);
 	$tabtype = array ();
 	
 	$i = 0;
 	while ( $i < $num ) {
 		$obj = $db->fetch_object($result);
+		
+		
+		$tabcompany[$obj->rowid] = array (
+				'id' => $obj->socid,
+				'name' => $obj->name,
+				'code_client' => $obj->code_compta
+		);
 		
 		// contrôles
 		$compta_bank = $obj->account_number;
@@ -158,6 +160,7 @@ if ($result) {
 			
 			// variable bookkeeping
 		$tabpay[$obj->rowid]["date"] = $obj->do;
+		$tabpay[$obj->rowid]["type_payment"] = $obj->fk_type;
 		$tabpay[$obj->rowid]["ref"] = $obj->label;
 		$tabpay[$obj->rowid]["fk_bank"] = $obj->rowid;
 		if (preg_match('/^\((.*)\)$/i', $obj->label, $reg)) {
@@ -167,6 +170,9 @@ if ($result) {
 		}
 		$links = $object->get_url($obj->rowid);
 		
+		// get_url may return -1 which is not traversable
+		if (is_array($links))
+		{
 		foreach ( $links as $key => $val ) {
 			
 			$tabtype[$obj->rowid] = $links[$key]['type'];
@@ -184,6 +190,7 @@ if ($result) {
 				$societestatic->nom = $links[$key]['label'];
 				$tabpay[$obj->rowid]["soclib"] = $societestatic->getNomUrl(1, '', 30);
 				$tabpay[$obj->rowid]["socid"] = $societestatic->id;
+				$tabpay[$obj->rowid]["socname"] = $societestatic->nom;
 				$tabtp[$obj->rowid][$compta_soc] += $obj->amount;
 			} else if ($links[$key]['type'] == 'sc') {
 				
@@ -200,6 +207,7 @@ if ($result) {
 				}
 				$chargestatic->ref = $chargestatic->lib;
 				$tabpay[$obj->rowid]["soclib"] = $chargestatic->getNomUrl(1, 30);
+				$tabpay[$obj->rowid]["socname"] = $chargestatic->lib;
 				
 				$sqlmid = 'SELECT cchgsoc.accountancy_code';
 				$sqlmid .= " FROM " . MAIN_DB_PREFIX . "c_chargesociales cchgsoc ";
@@ -229,6 +237,9 @@ if ($result) {
 				$tabtp [$obj->rowid] [$cptsociale] += $obj->amount;
 			}*/
 		}
+
+		}
+
 		$tabbq[$obj->rowid][$compta_bank] += $obj->amount;
 		
 		// if($obj->socid)$tabtp[$obj->rowid][$compta_soc] += $obj->amount;
@@ -540,7 +551,6 @@ if ($action == 'export_csv') {
 			
 			// Bank
 		foreach ( $tabbq[$key] as $k => $mt ) {
-			if (1) {
 				print "<tr " . $bc[$var] . ">";
 				print "<td>" . $date . "</td>";
 				print "<td>" . $reflabel . "</td>";
@@ -550,10 +560,11 @@ if ($action == 'export_csv') {
 				print "<td align='right'>" . ($mt >= 0 ? price($mt) : '') . "</td>";
 				print "<td align='right'>" . ($mt < 0 ? price(- $mt) : '') . "</td>";
 				print "</tr>";
-			}
 		}
 		
 		// Third party
+		if (is_array ( $tabtp[$key]))
+		{
 		foreach ( $tabtp[$key] as $k => $mt ) {
 			if ($k != 'type') {
 				print "<tr " . $bc[$var] . ">";
@@ -569,7 +580,22 @@ if ($action == 'export_csv') {
 				print "</tr>";
 			}
 		}
-		
+		}
+		else
+		{
+			foreach ( $tabbq[$key] as $k => $mt )
+			{
+				print "<tr " . $bc[$var] . ">";
+				print "<td>" . $date . "</td>";
+				print "<td>" . $reflabel . "</td>";
+				print "<td>" . $conf->global->ACCOUNTING_ACCOUNT_SUSPENSE . "</td>";
+				print "<td>" . $langs->trans('ThirdParty') . "</td>";
+				print "<td>&nbsp;</td>";
+				print "<td align='right'>" . ($mt < 0 ? price(- $mt) : '') . "</td>";
+				print "<td align='right'>" . ($mt >= 0 ? price($mt) : '') . "</td>";
+				print "</tr>";
+			}
+		}
 		$var = ! $var;
 	}
 	
