@@ -105,6 +105,7 @@ $sql .= " s.code_compta_fournisseur, p.accountancy_code_buy , ct.accountancy_cod
 $sql .= ' ,pextra.pr_cd_analytics';
 $sql .= ' ,proj.ref  as projet_ref';
 $sql .= ' ,proj.rowid as projet_id';
+$sql .= ' ,proj.title as projet_title';
 $sql .= ' ,f.ref_supplier';
 $sql .= ' ,f.entity';
 $sql .= " FROM " . MAIN_DB_PREFIX . "facture_fourn_det fd";
@@ -141,12 +142,30 @@ if ($result) {
 	$tabtva = array ();
 	$tabttc = array ();
 	$tabcompany = array ();
+	$tab_label_code=array();
 	
 	$i = 0;
 	while ( $i < $num ) {
 		$obj = $db->fetch_object($result);
 		// contrôles
 		$compta_soc = (! empty($obj->code_compta_fournisseur)) ? $obj->code_compta_fournisseur : $cptfour;
+		
+		if (!array_key_exists($compta_soc,$tab_label_code)) {
+			$sql_account = 'SELECT label FROM '.MAIN_DB_PREFIX.'accountingaccount';
+			$sql_account .= ' WHERE account_number=\''.$compta_soc.'\'';
+			dol_syslog('accountingex/journal/sellsjournal.php:: $sql_account=' . $sql_account);
+			$result_account = $db->query($sql_account);
+			if ($result_account) {
+				$obj_account = $db->fetch_object($result_account);
+				$tab_label_code[$compta_soc]=$obj_account->label;
+			}
+			else {
+				dol_print_error($db);
+			}
+		}
+		
+		
+		
 		$compta_prod = $obj->compte;
 		if (empty($compta_prod)) {
 			if ($obj->product_type == 0)
@@ -154,7 +173,38 @@ if ($result) {
 			else
 				$compta_prod = (! empty($conf->global->COMPTA_SERVICE_BUY_ACCOUNT)) ? $conf->global->COMPTA_SERVICE_BUY_ACCOUNT : $langs->trans("CodeNotDef");
 		}
+		
+		if (!array_key_exists($compta_prod,$tab_label_code)) {
+			$sql_account = 'SELECT label FROM '.MAIN_DB_PREFIX.'accountingaccount';
+			$sql_account .= ' WHERE account_number=\''.$compta_prod.'\'';
+			dol_syslog('accountingex/journal/sellsjournal.php:: $sql_account=' . $sql_account);
+			$result_account = $db->query($sql_account);
+			if ($result_account) {
+				$obj_account = $db->fetch_object($result_account);
+				$tab_label_code[$compta_prod]=$obj_account->label;
+			}
+			else {
+				dol_print_error($db);
+			}
+		}
+		
+		
 		$compta_tva = (! empty($obj->account_tva) ? $obj->account_tva : $cpttva);
+		
+		if (!array_key_exists($compta_tva,$tab_label_code)) {
+			$sql_account = 'SELECT label FROM '.MAIN_DB_PREFIX.'accountingaccount';
+			$sql_account .= ' WHERE account_number=\''.$compta_tva.'\'';
+			dol_syslog('accountingex/journal/sellsjournal.php:: $sql_account=' . $sql_account);
+			$result_account = $db->query($sql_account);
+			if ($result_account) {
+				$obj_account = $db->fetch_object($result_account);
+				$tab_label_code[$compta_tva]=$obj_account->label;
+			}
+			else {
+				dol_print_error($db);
+			}
+		}
+		
 		
 		$tabfac[$obj->rowid]["date"] = $obj->df;
 		$tabfac[$obj->rowid]["ref"] = $obj->ref;
@@ -181,12 +231,15 @@ if ($result) {
 		// Propre
 		if ($obj->entity == 5) {
 			$tabfac[$obj->rowid]["compta_ana"] = substr($obj->projet_ref, 7, 4);
+			$tabfac[$obj->rowid]["compta_ana_ref"] = $obj->projet_title;
 		} /*elseif ($obj->entity == 2) {
 		$tabfac[$obj->rowid]["compta_ana"] = '2AAA';
 		}*/elseif (!empty($obj->pr_cd_analytics)) {
-		$tabfac[$obj->rowid]["compta_ana"] = $tmprefix . $obj->pr_cd_analytics;
+			$tabfac[$obj->rowid]["compta_ana"] = $tmprefix . $obj->pr_cd_analytics;
+			$tabfac[$obj->rowid]["compta_ana_ref"] = $obj->projet_title;
 		} else {
 			$tabfac[$obj->rowid]["compta_ana"] = $tmprefix . '000';
+			$tabfac[$obj->rowid]["compta_ana_ref"] = $obj->projet_title;
 			//var_dump($obj->rowid);
 		}
 		
@@ -367,11 +420,14 @@ if ($action == 'export_csv') {
 					
 					print '"0029"' . $sep;
 					print '"' . $val['compta_ana'] . '"' . $sep;
+					print '"' . $val['compta_ana_ref'] . '"' . $sep;
 					print '"009"' . $sep;
 					print '"' . html_entity_decode($k) . '"' . $sep;
+					print '"' . $tab_label_code[$k] . '"' . $sep;
 					print '"' . utf8_decode($companystatic->name) . ' ' . $val['ref_supplier'] . '"' . $sep;
 					print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
 					print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
+					print '""' . $sep;
 					print '""' . $sep;
 					print '"' . $date . '"' . $sep;
 					print "\n";
@@ -384,11 +440,14 @@ if ($action == 'export_csv') {
 					
 					print '"0029"' . $sep;
 					print '"' . $val['compta_ana'] . '"' . $sep;
+					print '"' . $val['compta_ana_ref'] . '"' . $sep;
 					print '"009"' . $sep;
 					print '"' . html_entity_decode($k) . '"' . $sep;
+					print '"' . $tab_label_code[$k] . '"' . $sep;
 					print '"' . utf8_decode($companystatic->name) . ' ' . $val['ref_supplier'] . '"' . $sep;
 					print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
 					print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
+					print '""' . $sep;
 					print '""' . $sep;
 					print '"' . $date . '"' . $sep;
 					print "\n";
@@ -398,16 +457,20 @@ if ($action == 'export_csv') {
 			// Third party
 			print '"0029"' . $sep;
 			print '"' . $val['compta_ana'] . '"' . $sep;
+			print '"' . $val['compta_ana_ref'] . '"' . $sep;
 			print '"009"' . $sep;
 			foreach ( $tabttc[$key] as $k => $mt ) {
 				print '"' . html_entity_decode($k) . '"' . $sep;
+				print '"' . $tab_label_code[$k] . '"' . $sep;
 				print '"' . utf8_decode($companystatic->name) . ' ' . $val['ref_supplier'] . '"' . $sep;
 				print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
 				print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
 				if ((substr($k, 0, 3) == '401') || (substr($k, 0, 3) == '419')) {
 					//print '"029FFFF"' . $sep;
 					print substr($k, 0, 3).str_pad($companystatic->id, 5, "0", STR_PAD_LEFT) . $sep;
+					print '"' . utf8_decode($companystatic->name) . '"' . $sep;
 				} else {
+					print '""' . $sep;
 					print '""' . $sep;
 				}
 				

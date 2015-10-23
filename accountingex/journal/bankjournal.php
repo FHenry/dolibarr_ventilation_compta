@@ -137,6 +137,7 @@ if ($result) {
 	$tabbq = array ();
 	$tabtp = array ();
 	$tabtype = array ();
+	$tab_label_code=array();
 	
 	$i = 0;
 	while ( $i < $num ) {
@@ -185,7 +186,6 @@ if ($result) {
 				$paymentsupplierstatic->ref = $links[$key]['url_id'];
 				$tabpay[$obj->rowid]["lib"] .= ' ' . $paymentsupplierstatic->getNomUrl(2);
 			} else if ($links[$key]['type'] == 'company') {
-				
 				$societestatic->id = $links[$key]['url_id'];
 				$societestatic->nom = $links[$key]['label'];
 				$tabpay[$obj->rowid]["soclib"] = $societestatic->getNomUrl(1, '', 30);
@@ -450,6 +450,7 @@ if ($action == 'export_csv') {
 			
 			print '"0029"' . $sep;
 			print '""' . $sep;
+			print '""' . $sep;
 			print '"CA"' . $sep;
 			//print '"' . $date . '"' . $sep;
 			//print '"' . $val["ref"] . '"' . $sep;
@@ -458,8 +459,10 @@ if ($action == 'export_csv') {
 			foreach ( $tabbq[$key] as $k => $mt ) {
 				print '"' . length_accountg(html_entity_decode($k)) . '"' . $sep;
 				print '"' . $langs->trans("Bank") . '"' . $sep;
+				print '"' . $langs->trans("Bank") . '"' . $sep;
 				print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
 				print '"' . ($mt < 0 ? price(- $mt) : '') . '"'. $sep;
+				print '""' . $sep;
 				print '""' . $sep;
 				print '"' . $date . '"' . $sep;
 				
@@ -471,15 +474,18 @@ if ($action == 'export_csv') {
 				if ($mt) {
 					print '"0029"' . $sep;
 					print '""' . $sep;
+					print '""' . $sep;
 					print '"CA"' . $sep;
 					//print '"ss' . $date . '"' . $sep;
 					//print '"' . $val["ref"] . '"' . $sep;
 					
 					print '"' . length_accounta(html_entity_decode($k)) . '"' . $sep;
 					print '"' . $companystatic->name . '"' . $sep;
+					print '"' . $companystatic->name . '"' . $sep;
 					print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
 					print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
 					print '"' . substr($k, 0, 3).str_pad($val['socid'], 5, "0", STR_PAD_LEFT) . '"' . $sep;
+					print '"' . $companystatic->name . '"' . $sep;
 					print '"' . $date . '"' . $sep;
 					
 					print "\n";
