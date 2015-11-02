@@ -159,6 +159,21 @@ if ($result) {
 		if ($obj->typeop == '(BankTransfert)')
 			$compta_soc = $conf->global->ACCOUNTINGEX_ACCOUNT_TRANSFER_CASH;
 			
+			
+		if (!array_key_exists($compta_bank,$tab_label_code)) {
+			$sql_account = 'SELECT label FROM '.MAIN_DB_PREFIX.'accountingaccount';
+			$sql_account .= ' WHERE account_number=\''.$compta_bank.'\'';
+			dol_syslog('accountingex/journal/sellsjournal.php:: $sql_account=' . $sql_account);
+			$result_account = $db->query($sql_account);
+			if ($result_account) {
+				$obj_account = $db->fetch_object($result_account);
+				$tab_label_code[$compta_bank]=$obj_account->label;
+			}
+			else {
+				dol_print_error($db);
+			}
+		}
+			
 			// variable bookkeeping
 		$tabpay[$obj->rowid]["date"] = $obj->do;
 		$tabpay[$obj->rowid]["type_payment"] = $obj->fk_type;
@@ -176,6 +191,9 @@ if ($result) {
 		{
 		foreach ( $links as $key => $val ) {
 			
+			
+			
+			
 			$tabtype[$obj->rowid] = $links[$key]['type'];
 			
 			if ($links[$key]['type'] == 'payment') {
@@ -192,6 +210,21 @@ if ($result) {
 				$tabpay[$obj->rowid]["socid"] = $societestatic->id;
 				$tabpay[$obj->rowid]["socname"] = $societestatic->nom;
 				$tabtp[$obj->rowid][$compta_soc] += $obj->amount;
+				
+				if (!array_key_exists($compta_soc,$tab_label_code)) {
+					$sql_account = 'SELECT label FROM '.MAIN_DB_PREFIX.'accountingaccount';
+					$sql_account .= ' WHERE account_number=\''.$compta_soc.'\'';
+					dol_syslog('accountingex/journal/sellsjournal.php:: $sql_account=' . $sql_account);
+					$result_account = $db->query($sql_account);
+					if ($result_account) {
+						$obj_account = $db->fetch_object($result_account);
+						$tab_label_code[$compta_soc]=$obj_account->label;
+					}
+					else {
+						dol_print_error($db);
+					}
+				}
+				
 			} else if ($links[$key]['type'] == 'sc') {
 				
 				$chargestatic->id = $links[$key]['url_id'];
@@ -228,10 +261,40 @@ if ($result) {
 				$paymentvatstatic->ref = $links[$key]['url_id'];
 				$tabpay[$obj->rowid]["lib"] .= ' ' . $paymentvatstatic->getNomUrl(2);
 				$tabtp[$obj->rowid][$cpttva] += $obj->amount;
+				
+				if (!array_key_exists($cpttva,$tab_label_code)) {
+					$sql_account = 'SELECT label FROM '.MAIN_DB_PREFIX.'accountingaccount';
+					$sql_account .= ' WHERE account_number=\''.$cpttva.'\'';
+					dol_syslog('accountingex/journal/sellsjournal.php:: $sql_account=' . $sql_account);
+					$result_account = $db->query($sql_account);
+					if ($result_account) {
+						$obj_account = $db->fetch_object($result_account);
+						$tab_label_code[$cpttva]=$obj_account->label;
+					}
+					else {
+						dol_print_error($db);
+					}
+				}
+				
+				
 			} else if ($links[$key]['type'] == 'banktransfert') {
 				
 				$tabpay[$obj->rowid]["lib"] .= ' ' . $paymentvatstatic->getNomUrl(2);
 				$tabtp[$obj->rowid][$cpttva] += $obj->amount;
+				
+				if (!array_key_exists($cpttva,$tab_label_code)) {
+					$sql_account = 'SELECT label FROM '.MAIN_DB_PREFIX.'accountingaccount';
+					$sql_account .= ' WHERE account_number=\''.$cpttva.'\'';
+					dol_syslog('accountingex/journal/sellsjournal.php:: $sql_account=' . $sql_account);
+					$result_account = $db->query($sql_account);
+					if ($result_account) {
+						$obj_account = $db->fetch_object($result_account);
+						$tab_label_code[$cpttva]=$obj_account->label;
+					}
+					else {
+						dol_print_error($db);
+					}
+				}
 			}
 			/*else {
 				$tabtp [$obj->rowid] [$cptsociale] += $obj->amount;
@@ -459,7 +522,7 @@ if ($action == 'export_csv') {
 			foreach ( $tabbq[$key] as $k => $mt ) {
 				print '"' . length_accountg(html_entity_decode($k)) . '"' . $sep;
 				print '"' . $langs->trans("Bank") . '"' . $sep;
-				print '"' . $langs->trans("Bank") . '"' . $sep;
+				print '"' . $tab_label_code[$k] . '"' . $sep;
 				print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
 				print '"' . ($mt < 0 ? price(- $mt) : '') . '"'. $sep;
 				print '""' . $sep;
@@ -481,7 +544,7 @@ if ($action == 'export_csv') {
 					
 					print '"' . length_accounta(html_entity_decode($k)) . '"' . $sep;
 					print '"' . $companystatic->name . '"' . $sep;
-					print '"' . $companystatic->name . '"' . $sep;
+					print '"' . $tab_label_code[$k] . '"' . $sep;
 					print '"' . ($mt < 0 ? price(- $mt) : '') . '"' . $sep;
 					print '"' . ($mt >= 0 ? price($mt) : '') . '"' . $sep;
 					print '"' . substr($k, 0, 3).str_pad($val['socid'], 5, "0", STR_PAD_LEFT) . '"' . $sep;
