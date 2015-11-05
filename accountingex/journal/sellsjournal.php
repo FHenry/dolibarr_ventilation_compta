@@ -239,7 +239,7 @@ if ($result) {
 			$tabfac[$obj->rowid]["compta_ana"] = $tmprefix . $obj->pr_cd_analytics;
 			$tabfac[$obj->rowid]["compta_ana_ref"] = $obj->projet_title;
 		} else {
-			$tabfac[$obj->rowid]["compta_ana"] = $tmprefix . '000';
+			$tabfac[$obj->rowid]["compta_ana"] = $tmprefix . 'LOC';
 			$tabfac[$obj->rowid]["compta_ana_ref"] = $obj->projet_title;
 			//var_dump($obj->rowid);
 		}
